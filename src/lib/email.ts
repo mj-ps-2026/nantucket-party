@@ -40,11 +40,11 @@ export async function sendConfirmationEmail(rsvp: RSVPData) {
 
 export async function sendInviteEmail(name: string, email: string, token: string) {
   const resend = getResend()
-  if (!resend) return
+  if (!resend) return null
   const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev"
   const link = `https://thenantucket.party/invite/${token}`
 
-  await resend.emails.send({
+  return await resend.emails.send({
     from: `Nantucket Party <${fromEmail}>`,
     to: email,
     subject: "You're Invited!",

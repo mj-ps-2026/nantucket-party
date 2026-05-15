@@ -1,8 +1,9 @@
 import { getDb } from "@/db"
 import { invites, guests } from "@/db/schema"
 import { desc, eq, count } from "drizzle-orm"
-import { createInvite, sendInvite, deleteInvite } from "./actions"
+import { createInvite, deleteInvite } from "./actions"
 import { SelectableInput } from "@/components/selectable-input"
+import { InviteSendForm } from "@/components/invite-send-form"
 
 export const dynamic = "force-dynamic"
 
@@ -114,17 +115,7 @@ export default async function InvitesPage() {
                 </td>
                 <td className="p-4">
                   <div className="flex gap-2">
-                    {!invite.sentAt && (
-                      <form action={sendInvite}>
-                        <input type="hidden" name="id" value={invite.id} />
-                        <button
-                          type="submit"
-                          className="text-sm text-zinc-500 hover:text-zinc-900 underline transition-colors"
-                        >
-                          Send
-                        </button>
-                      </form>
-                    )}
+                    {!invite.sentAt && <InviteSendForm inviteId={invite.id} />}
                     <form action={deleteInvite}>
                       <input type="hidden" name="id" value={invite.id} />
                       <button
