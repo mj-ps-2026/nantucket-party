@@ -1,34 +1,52 @@
-# Nantucket Party RSVP System
+# Nantucket Party RSVP
 
-## 📌 Project Description
-A free, self-hosted RSVP system for parties using **Odette** (TypeScript/Node.js) with **SQLite** for storage. Hosted on **Railway** (free tier) with **GitHub** for code management.
+A free, self-hosted RSVP system for parties. Built with Next.js 16 (App Router), Neon Postgres, Resend, and Drizzle ORM.
 
-## 🧰 Tech Stack
-- Frontend: HTML/CSS (Odette templates)
-- Backend: Odette (TypeScript/Node.js)
-- Database: SQLite (via `better-sqlite3`)
-- Hosting: Railway (free tier, no credit card needed)
-- Version Control: GitHub
+## Tech Stack
 
-## 🚀 Setup Instructions
-1. Clone this repository
+- **Framework:** Next.js 16 (App Router)
+- **Database:** Neon Postgres (via Vercel Marketplace — free tier)
+- **ORM:** Drizzle ORM
+- **Email:** Resend (100 free emails/day)
+- **Styling:** Tailwind CSS v4
+- **Auth:** bcryptjs password + session cookie
+
+## Local Development
+
+1. Clone the repo
 2. Install dependencies: `npm install`
-3. Deploy to Railway using Docker
-4. Set up environment variables for SMTP and session secret
+3. Set up environment variables (see `.env.example`)
+4. Run migrations: `STORAGE_POSTGRES_URL=your-url npm run db:push`
+5. Start dev server: `npm run dev`
 
-## 📦 Railway Integration
-- Use the provided `Dockerfile` for deployment
-- Configure environment variables in Railway's dashboard
-- Ensure `.dockerignore` excludes build artifacts
+## Environment Variables
 
-## 🔐 Security
-- Store SMTP credentials and session secrets in environment variables
-- Never commit sensitive data to GitHub
+| Variable | Description |
+|---|---|
+| `STORAGE_POSTGRES_URL` | Neon connection string (auto-set by Vercel) |
+| `RESEND_API_KEY` | Resend API key for sending emails |
+| `FROM_EMAIL` | Sender email address for RSVP confirmations |
+| `ADMIN_PASSWORD_HASH` | bcrypt hash of the admin password |
 
-## 📁 Folder Structure
-- `public/` - Static assets
-- `pages/` - Next.js page components
-- `components/` - Reusable UI components
-- `utils/` - Helper functions
-- `styles/` - Global styles (Tailwind CSS)
-- `docker/` - Docker-specific configuration
+## Deployment (Vercel)
+
+1. Push to GitHub
+2. Import repo in Vercel
+3. Add a Neon Postgres database (via Vercel Marketplace)
+4. Set `RESEND_API_KEY`, `FROM_EMAIL`, and `ADMIN_PASSWORD_HASH`
+5. Deploy
+
+Generate the admin password hash:
+
+```
+node -e "console.log(require('bcryptjs').hashSync('your-password', 10))"
+```
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server |
+| `npm run build` | Build for production |
+| `npm run db:generate` | Generate Drizzle migrations |
+| `npm run db:push` | Push schema to database |

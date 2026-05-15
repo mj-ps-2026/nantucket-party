@@ -1,56 +1,65 @@
-## 📌 Nantucket Party RSVP System Project Plan
+# Nantucket Party RSVP — Project Plan
 
-### 🚀 Phase 1: Setup & Planning
+## Objective
 
-#### #1 Setup Project Structure
-- Create folder structure
-- Write `README.md` and `.gitignore`
-- Initialize Git
+A free, self-hosted RSVP system for parties that collects guest info, sends email confirmations, and provides an admin dashboard for managing guests.
 
-#### #2 Setup Development Environment
-- Install dependencies (npm/yarn)
-- Configure environment variables
-- Set up version control
+## Tech Stack
 
-    ### 🧱 Phase 2: Core Features
+- **Framework:** Next.js 16 (App Router)
+- **Database:** Neon Postgres (Vercel Marketplace free tier)
+- **ORM:** Drizzle ORM
+- **Email:** Resend (100 free emails/day)
+- **Auth:** Session cookie + bcryptjs password
+- **Styling:** Tailwind CSS v4
+- **Hosting:** Vercel (free tier)
 
-#### #3 Implement RSVP Form
-- Create form to collect guest info
-- Store RSVP data (SQLite/JSON)
-- Add party size tracking
+## Structure
 
-#### #4 Email Integration
-- Configure Gmail SMTP
-- Send automated RSVP confirmation emails
-- Handle email opt-out
+```
+src/
+├── app/
+│   ├── actions.ts              — RSVP server action
+│   ├── layout.tsx              — Root layout
+│   ├── page.tsx                — RSVP form (landing page)
+│   └── admin/
+│       ├── layout.tsx          — Admin layout (auth gate)
+│       ├── login/
+│       │   ├── actions.ts      — Login server action
+│       │   └── page.tsx        — Admin login page
+│       └── dashboard/
+│           ├── csv/route.ts    — CSV export
+│           └── page.tsx        — Guest list dashboard
+├── components/
+│   ├── guest-table.tsx         — Guest list table
+│   └── rsvp-form.tsx           — RSVP form
+├── db/
+│   ├── index.ts                — DB connection (lazy)
+│   └── schema.ts               — Drizzle schema
+└── lib/
+    ├── auth.ts                 — Session management
+    └── email.ts                — Resend email helpers
+```
 
-#### #5 Guest List Management
-- Create guest list view
-- Add search/filter functionality
-- Export guest list as CSV
+## Database Schema
 
-### 🧑‍💻 Phase 3: Admin Dashboard
+### `guests`
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | PK, auto-generated |
+| `name` | text | Required |
+| `email` | text | Required |
+| `party_size` | integer | Default 1 |
+| `message` | text | Optional |
+| `dietary_restrictions` | text | Optional |
+| `created_at` | timestamp | Auto |
 
-#### #6 Create Admin Panel
-- Add login/auth (basic or token-based)
-- Manage events and guests
-- View RSVP statistics
+## Deployment Checklist
 
-### 📈 Phase 4: Deployment & Security
-
-#### #7 Deploy to Vercel
-- Configure `vercel.json`
-- Set up environment variables
-- Enable HTTPS
-
-#### #8 Security & Maintenance
-- Secure environment variables
-- Add rate limiting
-- Implement logging
-
-### 📝 Phase 5: Documentation
-
-#### #9 Write Documentation
-- Update `README.md` with setup instructions
-- Create `CONTRIBUTING.md`
-- Add `SECURITY.md`
+1. [ ] Push repo to GitHub
+2. [ ] Import in Vercel
+3. [ ] Provision Neon Postgres via Vercel Marketplace
+4. [ ] Set `RESEND_API_KEY`, `FROM_EMAIL`, `ADMIN_PASSWORD_HASH`
+5. [ ] Deploy
+6. [ ] Verify RSVP form works
+7. [ ] Verify admin login works
