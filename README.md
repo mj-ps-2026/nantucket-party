@@ -24,6 +24,7 @@ A free, self-hosted RSVP system for parties. Built with Next.js 16 (App Router),
 | Variable | Description |
 |---|---|
 | `STORAGE_POSTGRES_URL` | Neon connection string (auto-set by Vercel) |
+| `SESSION_SECRET` | Random string for session cookies (optional, falls back to ADMIN_PASSWORD_HASH) |
 | `RESEND_API_KEY` | Resend API key for sending emails |
 | `FROM_EMAIL` | Sender email address for RSVP confirmations |
 | `ADMIN_PASSWORD_HASH` | bcrypt hash of the admin password |
