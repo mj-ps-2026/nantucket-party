@@ -6,6 +6,41 @@ function getResend() {
   return new Resend(key)
 }
 
+function fromEmail() {
+  return process.env.FROM_EMAIL || "onboarding@resend.dev"
+}
+
+function wrapHtml(body: string, preheader: string) {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="display:none;font-size:1px;color:#333;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">${preheader}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:32px 16px">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)">
+          <tr>
+            <td style="padding:48px 40px 40px">
+              ${body}
+              <p style="color:#999;font-size:12px;line-height:16px;margin-top:40px;margin-bottom:0;padding-top:24px;border-top:1px solid #eee">
+                Nantucket Party
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+function wrapText(text: string) {
+  return `Nantucket Party\n\n${text}\n\n---\nNantucket Party`
+}
+
 type RSVPData = {
   name: string
   email: string
@@ -17,45 +52,57 @@ type RSVPData = {
 export async function sendConfirmationEmail(rsvp: RSVPData) {
   const resend = getResend()
   if (!resend) return
-  const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev"
+
+  const bodyHtml = `
+    <p style="color:#666;font-size:14px;line-height:20px;margin:0 0 4px">RSVP Confirmed</p>
+    <h1 style="font-size:24px;font-weight:600;margin:0 0 24px;color:#111">You're on the list</h1>
+    <p style="color:#333;font-size:16px;line-height:24px;margin:0 0 24px">Thanks ${rsvp.name}!</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:8px;padding:16px">
+      <tr><td style="padding:6px 0;color:#666;font-size:14px">Party size</td><td style="padding:6px 0;color:#111;font-size:14px;font-weight:500">${rsvp.partySize}</td></tr>
+      ${rsvp.dietaryRestrictions ? `<tr><td style="padding:6px 0;color:#666;font-size:14px">Dietary restrictions</td><td style="padding:6px 0;color:#111;font-size:14px">${rsvp.dietaryRestrictions}</td></tr>` : ""}
+    </table>
+    ${rsvp.message ? `<p style="color:#555;font-size:14px;line-height:20px;margin:16px 0 0;padding:12px;background:#fafafa;border-radius:8px;font-style:italic">"${rsvp.message}"</p>` : ""}
+    <p style="color:#999;font-size:14px;margin-top:24px">See you there!</p>`
+
+  const bodyText = `RSVP Confirmed\n\nThanks ${rsvp.name}!\n\nParty size: ${rsvp.partySize}${rsvp.dietaryRestrictions ? `\nDietary restrictions: ${rsvp.dietaryRestrictions}` : ""}${rsvp.message ? `\nMessage: "${rsvp.message}"` : ""}`
 
   await resend.emails.send({
-    from: `Nantucket Party <${fromEmail}>`,
+    from: `Nantucket Party <${fromEmail()}>`,
     to: rsvp.email,
-    subject: "RSVP Confirmed!",
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h1>You're on the list!</h1>
-        <p>Thanks for your RSVP, <strong>${rsvp.name}</strong>.</p>
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr><td style="padding: 8px 0; color: #666;">Party size:</td><td style="padding: 8px 0;">${rsvp.partySize}</td></tr>
-          ${rsvp.dietaryRestrictions ? `<tr><td style="padding: 8px 0; color: #666;">Dietary restrictions:</td><td style="padding: 8px 0;">${rsvp.dietaryRestrictions}</td></tr>` : ""}
-          ${rsvp.message ? `<tr><td style="padding: 8px 0; color: #666;">Message:</td><td style="padding: 8px 0;">${rsvp.message}</td></tr>` : ""}
-        </table>
-        <p style="color: #999; font-size: 14px; margin-top: 32px;">See you there!</p>
-      </div>
-    `,
+    subject: "RSVP Confirmed",
+    html: wrapHtml(bodyHtml, `Your RSVP for Nantucket Party is confirmed`),
+    text: wrapText(bodyText),
+    headers: { "List-Unsubscribe": `<mailto:unsubscribe@${fromEmail().split("@")[1]}>` },
   })
 }
 
 export async function sendInviteEmail(name: string, email: string, token: string) {
   const resend = getResend()
   if (!resend) return null
-  const fromEmail = process.env.FROM_EMAIL || "onboarding@resend.dev"
   const link = `https://thenantucket.party/invite/${token}`
 
+  const bodyHtml = `
+    <p style="color:#666;font-size:14px;line-height:20px;margin:0 0 4px">You're Invited</p>
+    <h1 style="font-size:24px;font-weight:600;margin:0 0 24px;color:#111">Nantucket Party</h1>
+    <p style="color:#333;font-size:16px;line-height:24px;margin:0 0 8px">Hi ${name},</p>
+    <p style="color:#555;font-size:15px;line-height:22px;margin:0 0 24px">You're invited to a party on Nantucket. Click the button below to let us know if you can make it.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 32px">
+      <tr>
+        <td style="background-color:#111;border-radius:8px;padding:14px 32px">
+          <a href="${link}" style="color:#fff;font-size:15px;font-weight:500;text-decoration:none;display:block">RSVP Now</a>
+        </td>
+      </tr>
+    </table>
+    <p style="color:#999;font-size:14px;line-height:20px">Feel free to forward this to anyone else who should come.</p>`
+
+  const bodyText = `You're Invited!\n\nHi ${name},\n\nYou're invited to a party on Nantucket. RSVP here:\n${link}\n\nFeel free to forward this to anyone else who should come.`
+
   return await resend.emails.send({
-    from: `Nantucket Party <${fromEmail}>`,
+    from: `Nantucket Party <${fromEmail()}>`,
     to: email,
-    subject: "You're Invited!",
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h1>You're Invited!</h1>
-        <p>Hi <strong>${name}</strong>,</p>
-        <p>You've been invited to a party on Nantucket! Click the link below to RSVP:</p>
-        <a href="${link}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 8px; margin: 16px 0;">RSVP Now</a>
-        <p style="color: #999; font-size: 14px;">Feel free to forward this email to anyone else who should come.</p>
-      </div>
-    `,
+    subject: "You're Invited to Nantucket Party",
+    html: wrapHtml(bodyHtml, `RSVP for Nantucket Party`),
+    text: wrapText(bodyText),
+    headers: { "List-Unsubscribe": `<mailto:unsubscribe@${fromEmail().split("@")[1]}>` },
   })
 }
