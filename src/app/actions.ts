@@ -12,6 +12,7 @@ const rsvpSchema = z.object({
   partySize: z.coerce.number().int().min(1).max(100),
   message: z.string().optional(),
   dietaryRestrictions: z.string().optional(),
+  inviteToken: z.string().optional(),
 })
 
 export type RSVPState = {
@@ -28,9 +29,23 @@ export async function submitRSVP(_prev: RSVPState, formData: FormData): Promise<
     return { success: false, error: parsed.error.flatten().fieldErrors, guest: null }
   }
 
-  const { name, email, partySize, message, dietaryRestrictions } = parsed.data
+  const { name, email, partySize, message, dietaryRestrictions, inviteToken } = parsed.data
 
   const db = getDb()
+
+  let inviteId: string | null = null
+  if (inviteToken) {
+    const invites = (await import("@/db/schema")).invites
+    const [invite] = await db
+      .select()
+      .from(invites)
+      .where(
+        (await import("drizzle-orm")).eq(invites.token, inviteToken),
+      )
+      .limit(1)
+    if (invite) inviteId = invite.id
+  }
+
   const [guest] = await db
     .insert(guests)
     .values({
@@ -39,6 +54,7 @@ export async function submitRSVP(_prev: RSVPState, formData: FormData): Promise<
       partySize,
       message: message || null,
       dietaryRestrictions: dietaryRestrictions || null,
+      inviteId,
     })
     .returning()
 

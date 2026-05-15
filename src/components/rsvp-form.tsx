@@ -5,7 +5,7 @@ import { submitRSVP, type RSVPState } from "@/app/actions"
 
 const initialState: RSVPState = { success: false, error: null, guest: null }
 
-export function RSVPForm() {
+export function RSVPForm({ defaultName, inviteToken }: { defaultName?: string; inviteToken?: string }) {
   const [state, action, pending] = useActionState(submitRSVP, initialState)
 
   if (state.success) {
@@ -20,6 +20,7 @@ export function RSVPForm() {
 
   return (
     <form action={action} className="space-y-5">
+      {inviteToken && <input type="hidden" name="inviteToken" value={inviteToken} />}
       <div>
         <label htmlFor="name" className="block text-sm font-medium mb-1">
           Name
@@ -29,6 +30,7 @@ export function RSVPForm() {
           name="name"
           type="text"
           required
+          defaultValue={defaultName || ""}
           className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
         />
         {state.error?.name && (
