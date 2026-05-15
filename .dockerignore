@@ -1,0 +1,17 @@
+# .dockerignore
+
+# Ignore node_modules and package-lock.json
+node_modules/
+package-lock.json
+
+# Ignore build artifacts
+coverage/
+logs/
+
+# Ignore version control files
+.git/
+
+# Ignore other unnecessary files
+.DS_Store
+Thumbs.db
+*~
