@@ -12,19 +12,29 @@ export default async function DashboardPage({
   const { q } = await searchParams
   const query = q?.trim() || ""
 
-  const db = getDb()
-  const allGuests = await db
-    .select()
-    .from(guests)
-    .where(
-      query
-        ? or(
-            ilike(guests.name, `%${query}%`),
-            ilike(guests.email, `%${query}%`),
-          )
-        : undefined,
-    )
-    .orderBy(desc(guests.createdAt))
+  let allGuests: Array<{
+    id: string; name: string; email: string; partySize: number
+    message: string | null; dietaryRestrictions: string | null; createdAt: Date
+  }> = []
+  let dbError = ""
+
+  try {
+    const db = getDb()
+    allGuests = await db
+      .select()
+      .from(guests)
+      .where(
+        query
+          ? or(
+              ilike(guests.name, `%${query}%`),
+              ilike(guests.email, `%${query}%`),
+            )
+          : undefined,
+      )
+      .orderBy(desc(guests.createdAt))
+  } catch (e: unknown) {
+    dbError = e instanceof Error ? e.message : "Database error"
+  }
 
   return (
     <div>
@@ -34,21 +44,20 @@ export default async function DashboardPage({
           <span className="text-zinc-400 text-lg ml-2">({allGuests.length})</span>
         </h1>
         <div className="flex items-center gap-3">
-          <form
-            action={async (formData: FormData) => {
-              "use server"
-              revalidatePath("/admin/dashboard")
-            }}
+          <a
+            href={`/admin/dashboard/csv${query ? `?q=${encodeURIComponent(query)}` : ""}`}
+            className="text-sm text-zinc-500 hover:text-zinc-900 underline transition-colors"
           >
-            <a
-              href={`/admin/dashboard/csv${query ? `?q=${encodeURIComponent(query)}` : ""}`}
-              className="text-sm text-zinc-500 hover:text-zinc-900 underline transition-colors"
-            >
-              Export CSV
-            </a>
-          </form>
+            Export CSV
+          </a>
         </div>
       </div>
+
+      {dbError && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+          Database error: {dbError}
+        </div>
+      )}
 
       <form className="mb-6">
         <input
