@@ -2,6 +2,7 @@ import { getDb } from "@/db"
 import { invites, guests } from "@/db/schema"
 import { desc, eq, count } from "drizzle-orm"
 import { createInvite, sendInvite, deleteInvite } from "./actions"
+import { SelectableInput } from "@/components/selectable-input"
 
 export const dynamic = "force-dynamic"
 
@@ -109,12 +110,7 @@ export default async function InvitesPage() {
                   )}
                 </td>
                 <td className="p-4">
-                  <input
-                    readOnly
-                    value={`https://thenantucket.party/invite/${invite.token}`}
-                    className="w-64 px-2 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs font-mono"
-                    onClick={(e) => (e.target as HTMLInputElement).select()}
-                  />
+                  <SelectableInput value={`https://thenantucket.party/invite/${invite.token}`} />
                 </td>
                 <td className="p-4">
                   <div className="flex gap-2">
