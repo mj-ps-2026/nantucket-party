@@ -13,6 +13,7 @@ const rsvpSchema = z.object({
   message: z.string().optional(),
   dietaryRestrictions: z.string().optional(),
   inviteToken: z.string().optional(),
+  website: z.string().optional(),
 })
 
 export type RSVPState = {
@@ -29,7 +30,11 @@ export async function submitRSVP(_prev: RSVPState, formData: FormData): Promise<
     return { success: false, error: parsed.error.flatten().fieldErrors, guest: null }
   }
 
-  const { name, email, partySize, message, dietaryRestrictions, inviteToken } = parsed.data
+  const { name, email, partySize, message, dietaryRestrictions, inviteToken, website } = parsed.data
+
+  if (website) {
+    return { success: true, error: null, guest: null }
+  }
 
   const db = getDb()
 

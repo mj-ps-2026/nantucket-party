@@ -21,6 +21,10 @@ export function RSVPForm({ defaultName, inviteToken }: { defaultName?: string; i
   return (
     <form action={action} className="space-y-5">
       {inviteToken && <input type="hidden" name="inviteToken" value={inviteToken} />}
+      <div aria-hidden="true" className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
+        <label htmlFor="website">Website</label>
+        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
       <div>
         <label htmlFor="name" className="block text-sm font-medium mb-1">
           Name

@@ -1,6 +1,7 @@
 import { getDb } from "@/db"
 import { guests as guestsTable, invites } from "@/db/schema"
 import { desc, ilike, or, eq, count } from "drizzle-orm"
+import { DeleteGuestForm } from "@/components/delete-guest-form"
 
 export default async function DashboardPage({
   searchParams,
@@ -142,12 +143,13 @@ export default async function DashboardPage({
                 <th className="p-4 font-medium text-zinc-500">Dietary</th>
                 <th className="p-4 font-medium text-zinc-500">Message</th>
                 <th className="p-4 font-medium text-zinc-500">Date</th>
+                <th className="p-4 font-medium text-zinc-500"></th>
               </tr>
             </thead>
             <tbody>
               {allGuests.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-400">
+                  <td colSpan={7} className="p-8 text-center text-zinc-400">
                     No RSVPs yet.
                   </td>
                 </tr>
@@ -161,6 +163,9 @@ export default async function DashboardPage({
                   <td className="p-4 text-zinc-500 max-w-[200px] truncate">{guest.message || "—"}</td>
                   <td className="p-4 text-zinc-400 whitespace-nowrap">
                     {guest.createdAt.toLocaleDateString()}
+                  </td>
+                  <td className="p-4">
+                    <DeleteGuestForm guestId={guest.id} name={guest.name} />
                   </td>
                 </tr>
               ))}
