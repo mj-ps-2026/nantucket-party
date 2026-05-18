@@ -1,12 +1,20 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState, useCallback, useRef } from "react"
+import Script from "next/script"
 import { submitRSVP, type RSVPState } from "@/app/actions"
+import { Turnstile } from "@/components/turnstile"
+
+const hasTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 const initialState: RSVPState = { success: false, error: null, guest: null }
 
 export function RSVPForm({ defaultName, inviteToken }: { defaultName?: string; inviteToken?: string }) {
   const [state, action, pending] = useActionState(submitRSVP, initialState)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const loadedAt = useRef(Date.now())
+
+  const onToken = useCallback((token: string | null) => setTurnstileToken(token), [])
 
   if (state.success) {
     return (
@@ -20,7 +28,10 @@ export function RSVPForm({ defaultName, inviteToken }: { defaultName?: string; i
 
   return (
     <form action={action} className="space-y-5">
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" />
       {inviteToken && <input type="hidden" name="inviteToken" value={inviteToken} />}
+      <input type="hidden" name="turnstileToken" value={turnstileToken || ""} />
+      <input type="hidden" name="loadedAt" value={loadedAt.current} />
       <div aria-hidden="true" className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
         <label htmlFor="website">Website</label>
         <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
@@ -100,9 +111,14 @@ export function RSVPForm({ defaultName, inviteToken }: { defaultName?: string; i
         />
       </div>
 
+      <Turnstile onToken={onToken} />
+      {state.error?.turnstile && (
+        <p className="text-red-500 text-xs">{state.error.turnstile}</p>
+      )}
+
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || (hasTurnstile && !turnstileToken)}
         className="w-full py-2.5 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 disabled:opacity-50 transition-colors"
       >
         {pending ? "Sending..." : "Send RSVP"}

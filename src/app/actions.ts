@@ -14,6 +14,7 @@ const rsvpSchema = z.object({
   dietaryRestrictions: z.string().optional(),
   inviteToken: z.string().optional(),
   website: z.string().optional(),
+  loadedAt: z.string().optional(),
 })
 
 export type RSVPState = {
@@ -30,10 +31,33 @@ export async function submitRSVP(_prev: RSVPState, formData: FormData): Promise<
     return { success: false, error: parsed.error.flatten().fieldErrors, guest: null }
   }
 
-  const { name, email, partySize, message, dietaryRestrictions, inviteToken, website } = parsed.data
+  const { name, email, partySize, message, dietaryRestrictions, inviteToken, website, loadedAt } = parsed.data
 
   if (website) {
     return { success: true, error: null, guest: null }
+  }
+
+  if (loadedAt) {
+    const elapsed = Date.now() - Number(loadedAt)
+    if (elapsed < 3000) {
+      return { success: true, error: null, guest: null }
+    }
+  }
+
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+  if (turnstileSecret) {
+    const turnstileToken = formData.get("turnstileToken") as string
+    if (!turnstileToken) {
+      return { success: false, error: { turnstile: ["Please complete the security check"] }, guest: null }
+    }
+    const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: new URLSearchParams({ secret: turnstileSecret, response: turnstileToken }),
+    })
+    const result = await verify.json()
+    if (!result.success) {
+      return { success: false, error: { turnstile: ["Security check failed. Try again."] }, guest: null }
+    }
   }
 
   const db = getDb()
