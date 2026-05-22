@@ -4,6 +4,7 @@ import { useActionState, useState, useCallback, useRef } from "react"
 import Script from "next/script"
 import { submitRSVP, type RSVPState } from "@/app/actions"
 import { Turnstile } from "@/components/turnstile"
+import { FoamParty } from "@/components/foam-party"
 
 const hasTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
@@ -18,10 +19,11 @@ export function RSVPForm({ defaultName, inviteToken }: { defaultName?: string; i
 
   if (state.success) {
     return (
-      <div className="text-center py-16">
-        <div className="text-5xl mb-4">&#10003;</div>
-        <h2 className="text-2xl font-semibold mb-2">You&apos;re on the list!</h2>
-        <p className="text-zinc-500">Check your email for a confirmation.</p>
+      <div className="relative text-center py-16">
+        <FoamParty />
+        <div className="text-6xl mb-4">🐖</div>
+        <h2 className="text-2xl font-semibold mb-2">See you there!</h2>
+        <p className="text-zinc-500">Check your email for the details.</p>
       </div>
     )
   }
