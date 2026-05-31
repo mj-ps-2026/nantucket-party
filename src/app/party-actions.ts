@@ -2,7 +2,7 @@
 
 import { getDb } from "@/db"
 import { guests, invites, notes } from "@/db/schema"
-import { sendConfirmationEmail } from "@/lib/email"
+import { sendConfirmationEmail, sendHostNotification } from "@/lib/email"
 import { emojiFor, NOTE_TINTS, type GuestTile, type WallNote } from "@/lib/party"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
@@ -101,6 +101,19 @@ export async function submitPartyRSVP(formData: FormData): Promise<PartyRsvpResu
     } catch {
       // email failure shouldn't block the RSVP
     }
+  }
+
+  // host notification — fires on every RSVP, going or regret
+  try {
+    await sendHostNotification({
+      name,
+      email: email || null,
+      going,
+      partySize,
+      message: note || null,
+    })
+  } catch {
+    // notification failure shouldn't block the RSVP
   }
 
   revalidatePath("/")
