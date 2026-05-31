@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Fredoka, DM_Sans } from "next/font/google"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -12,9 +12,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
+// Bold Summer Pop type — display + body for the invitation experience
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+})
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+})
+
 export const metadata: Metadata = {
-  title: "Nantucket Party RSVP",
-  description: "RSVP for the party",
+  title: "Foam Party & Pig Roast — You're Invited",
+  description: "Saturday, June 27th · 1:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds.",
 }
 
 export default function RootLayout({
@@ -23,7 +36,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${dmSans.variable}`}
+    >
       <body className="font-sans antialiased">{children}</body>
     </html>
   )

@@ -5,6 +5,265 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* =====================================================================
+   BOLD SUMMER POP — design tokens (pulled from the hero illustration)
+   Used by the Foam Party invitation experience (src/components/party/*)
+   ===================================================================== */
+:root {
+  /* palette */
+  --sky: #4cb7e8;
+  --sky-deep: #2c97d4;
+  --grass: #6fbe45;
+  --grass-deep: #4e9e2c;
+  --foam: #ffffff;
+  --cream: #fffaef;
+  --tomato: #ff5440;
+  --sunny: #ffc526;
+  --pink: #ff5ba0;
+  --teal: #1fc3b6;
+  --wood: #9c6b3e;
+  --wood-deep: #6b4a2b;
+  --ink: #2e2016;
+  --ink-soft: #6a5742;
+
+  /* type — mapped to the next/font faces loaded in layout.tsx */
+  --display: var(--font-fredoka), system-ui, sans-serif;
+  --body: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* radii / borders / shadow — "sticker on the page" */
+  --r-lg: 28px;
+  --r-md: 18px;
+  --r-sm: 12px;
+  --bord: 4px;
+  --sticker-shadow: 0 14px 0 -6px rgba(46, 32, 22, 0.12), 0 22px 40px -12px rgba(46, 32, 22, 0.34);
+  --pop-shadow: 0 8px 0 -3px rgba(46, 32, 22, 0.1), 0 16px 30px -10px rgba(46, 32, 22, 0.28);
+
+  /* motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* the party page paints the whole backyard background */
+body.party {
+  font-family: var(--body);
+  color: var(--ink);
+  background: linear-gradient(
+    180deg,
+    var(--sky) 0%,
+    #7fd0ee 34%,
+    #b6e6c2 52%,
+    var(--grass) 78%,
+    var(--grass-deep) 100%
+  );
+  background-attachment: fixed;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* sunbeam wash + soft highlight echo of the artwork */
+body.party::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1200px 700px at 88% -8%, rgba(255, 224, 130, 0.55), transparent 60%),
+    radial-gradient(900px 600px at 6% 4%, rgba(255, 255, 255, 0.3), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.party-root {
+  position: relative;
+  z-index: 1;
+}
+
+::selection {
+  background: var(--sunny);
+  color: var(--ink);
+}
+
+.party .kicker {
+  font-family: var(--display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: clamp(12px, 2.6vw, 15px);
+}
+
+.party h1,
+.party h2,
+.party h3 {
+  font-family: var(--display);
+  margin: 0;
+  line-height: 1.04;
+}
+
+.party .wrap {
+  width: min(1120px, 92vw);
+  margin: 0 auto;
+}
+
+/* button states */
+.pb {
+  transition:
+    transform 0.16s var(--ease),
+    box-shadow 0.16s var(--ease),
+    filter 0.16s var(--ease);
+}
+.pb:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.035);
+  filter: brightness(1.04);
+  box-shadow: 0 14px 0 -3px rgba(46, 32, 22, 0.12), 0 22px 38px -10px rgba(46, 32, 22, 0.34);
+}
+.pb:active:not(:disabled) {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 4px 0 -2px rgba(46, 32, 22, 0.14);
+}
+
+/* scroll cue bounce */
+.cue-arrow {
+  animation: cueBob 1.5s var(--ease) infinite;
+}
+@keyframes cueBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+.cue:hover .cue-arrow {
+  color: var(--tomato);
+}
+
+/* input focus */
+.party input:focus,
+.party textarea:focus {
+  border-color: var(--teal) !important;
+  box-shadow: 0 0 0 4px rgba(31, 195, 182, 0.22);
+}
+
+/* tile / note pop-in */
+@keyframes popIn {
+  0% {
+    transform: scale(0.5) translateY(14px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.pop {
+  animation: popIn 0.42s var(--spring) both;
+}
+
+@keyframes dropIn {
+  0% {
+    transform: translateY(-22px) rotate(var(--rot, 0deg)) scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg)) scale(1);
+    opacity: 1;
+  }
+}
+.note {
+  animation: dropIn 0.46s var(--spring) both;
+}
+
+/* card tossed across the table — flies in from the left, skids, settles askew */
+@keyframes tossIn {
+  0% {
+    transform: translateX(-128%) translateY(-8%) rotate(-26deg) scale(0.92);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  62% {
+    transform: translateX(4%) translateY(0) rotate(5deg) scale(1.015);
+  }
+  80% {
+    transform: translateX(-1.5%) rotate(-3deg) scale(1);
+  }
+  92% {
+    transform: translateX(0.6%) rotate(0.6deg);
+  }
+  100% {
+    transform: translateX(0) rotate(-1.4deg) scale(1);
+  }
+}
+.toss {
+  animation: tossIn 0.92s cubic-bezier(0.22, 0.61, 0.3, 1) both;
+  transform: rotate(-1.4deg);
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fadeUp 0.55s var(--ease) both;
+}
+
+/* picnic-table surface — warm wooden planks (top-down) */
+.picnic {
+  background-color: var(--wood-base, #b07c49);
+  background-image:
+    radial-gradient(120% 90% at 50% 42%, rgba(255, 238, 205, 0.3), rgba(60, 36, 18, 0.3) 100%),
+    repeating-linear-gradient(
+      1deg,
+      rgba(60, 34, 16, 0.05) 0 4px,
+      rgba(255, 240, 212, 0.05) 4px 9px,
+      rgba(60, 34, 16, 0.04) 9px 16px
+    ),
+    repeating-linear-gradient(180deg, rgba(255, 235, 200, 0.07) 0 56px, rgba(120, 74, 38, 0.12) 56px 112px),
+    repeating-linear-gradient(
+      180deg,
+      rgba(70, 42, 20, 0) 0 104px,
+      rgba(46, 27, 12, 0.55) 106px 109px,
+      rgba(150, 100, 58, 0.22) 110px 113px,
+      rgba(70, 42, 20, 0) 114px 118px
+    );
+  background-blend-mode: multiply, normal, normal, normal;
+}
+.picnic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(28px 16px at 18% 30%, rgba(56, 32, 14, 0.3), transparent 70%),
+    radial-gradient(22px 13px at 82% 68%, rgba(56, 32, 14, 0.26), transparent 70%),
+    radial-gradient(20px 12px at 64% 18%, rgba(56, 32, 14, 0.22), transparent 70%);
+}
+
+/* reduced motion: calm, no animation */
+@media (prefers-reduced-motion: reduce) {
+  .party *,
+  .toss,
+  .fade-up,
+  .pop,
+  .note,
+  .cue-arrow {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 @keyframes foam {
   0% {
     transform: translateY(0) translateX(0) scale(0.5);
