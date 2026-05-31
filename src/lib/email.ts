@@ -10,6 +10,9 @@ function fromEmail() {
   return process.env.FROM_EMAIL || "onboarding@resend.dev"
 }
 
+// hosts who get pinged on every RSVP
+const HOST_EMAILS = ["mjchapmn@gmail.com", "ltchapmn@gmail.com"]
+
 function wrapHtml(body: string, preheader: string) {
   return `
 <!DOCTYPE html>
@@ -73,6 +76,53 @@ export async function sendConfirmationEmail(rsvp: RSVPData) {
     html: wrapHtml(bodyHtml, `Your RSVP for Nantucket Party is confirmed`),
     text: wrapText(bodyText),
     headers: { "List-Unsubscribe": `<mailto:unsubscribe@${fromEmail().split("@")[1]}>` },
+  })
+}
+
+type HostNotification = {
+  name: string
+  email: string | null
+  going: boolean
+  partySize: number
+  message: string | null
+}
+
+export async function sendHostNotification(rsvp: HostNotification) {
+  const resend = getResend()
+  if (!resend) return
+
+  const verb = rsvp.going ? "is in" : "sends regrets"
+  const subject = rsvp.going
+    ? `${rsvp.name} is coming (+${rsvp.partySize})`
+    : `${rsvp.name} can't make it`
+
+  const rows = [
+    ["Response", rsvp.going ? "Going" : "Regret"],
+    ...(rsvp.going ? [["Party size", String(rsvp.partySize)]] : []),
+    ["Email", rsvp.email || "—"],
+  ]
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:6px 0;color:#666;font-size:14px">${k}</td><td style="padding:6px 0;color:#111;font-size:14px;font-weight:500">${v}</td></tr>`,
+    )
+    .join("")
+
+  const bodyHtml = `
+    <p style="color:#666;font-size:14px;line-height:20px;margin:0 0 4px">New RSVP</p>
+    <h1 style="font-size:24px;font-weight:600;margin:0 0 24px;color:#111">${rsvp.name} ${verb}</h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border-radius:8px;padding:16px">
+      ${rows}
+    </table>
+    ${rsvp.message ? `<p style="color:#555;font-size:14px;line-height:20px;margin:16px 0 0;padding:12px;background:#fafafa;border-radius:8px;font-style:italic">"${rsvp.message}"</p>` : ""}`
+
+  const bodyText = `New RSVP\n\n${rsvp.name} ${verb}\n\nResponse: ${rsvp.going ? "Going" : "Regret"}${rsvp.going ? `\nParty size: ${rsvp.partySize}` : ""}\nEmail: ${rsvp.email || "—"}${rsvp.message ? `\nMessage: "${rsvp.message}"` : ""}`
+
+  await resend.emails.send({
+    from: `Nantucket Party <${fromEmail()}>`,
+    to: HOST_EMAILS,
+    subject,
+    html: wrapHtml(bodyHtml, `${rsvp.name} ${verb}`),
+    text: wrapText(bodyText),
   })
 }
 
