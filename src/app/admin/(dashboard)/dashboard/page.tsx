@@ -1,7 +1,8 @@
 import { getDb } from "@/db"
-import { guests as guestsTable, invites } from "@/db/schema"
+import { guests as guestsTable, invites, notes as notesTable } from "@/db/schema"
 import { desc, ilike, or, eq, count } from "drizzle-orm"
 import { DeleteGuestForm } from "@/components/delete-guest-form"
+import { DeleteNoteForm } from "@/components/delete-note-form"
 import { MessageCell } from "@/components/message-cell"
 
 export default async function DashboardPage({
@@ -41,7 +42,11 @@ export default async function DashboardPage({
     )
     .orderBy(desc(guestsTable.createdAt))
 
-  const totalPeople = allGuests.reduce((sum, g) => sum + g.partySize, 0)
+  const allNotes = await db.select().from(notesTable).orderBy(desc(notesTable.createdAt))
+
+  const totalPeople = allGuests
+    .filter((g) => g.status !== "regret")
+    .reduce((sum, g) => sum + g.partySize, 0)
   const totalInvited = allInvites.length
   const totalRsvped = allInvites.filter((i) => i.rsvpCount > 0).length
 
@@ -140,6 +145,7 @@ export default async function DashboardPage({
               <tr className="border-b border-zinc-200 text-left">
                 <th className="p-4 font-medium text-zinc-500">Name</th>
                 <th className="p-4 font-medium text-zinc-500">Email</th>
+                <th className="p-4 font-medium text-zinc-500">Status</th>
                 <th className="p-4 font-medium text-zinc-500">Party</th>
                 <th className="p-4 font-medium text-zinc-500">Dietary</th>
                 <th className="p-4 font-medium text-zinc-500">Message</th>
@@ -150,7 +156,7 @@ export default async function DashboardPage({
             <tbody>
               {allGuests.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-zinc-400">
+                  <td colSpan={8} className="p-8 text-center text-zinc-400">
                     No RSVPs yet.
                   </td>
                 </tr>
@@ -158,7 +164,14 @@ export default async function DashboardPage({
               {allGuests.map((guest) => (
                 <tr key={guest.id} className="border-b border-zinc-100">
                   <td className="p-4">{guest.name}</td>
-                  <td className="p-4 text-zinc-500">{guest.email}</td>
+                  <td className="p-4 text-zinc-500">{guest.email || "—"}</td>
+                  <td className="p-4">
+                    {guest.status === "regret" ? (
+                      <span className="text-zinc-400">Can&#39;t make it</span>
+                    ) : (
+                      <span className="text-green-600 font-medium">Going</span>
+                    )}
+                  </td>
                   <td className="p-4">{guest.partySize}</td>
                   <td className="p-4 text-zinc-500">{guest.dietaryRestrictions || "—"}</td>
                   <td className="p-4"><MessageCell message={guest.message} /></td>
@@ -167,6 +180,43 @@ export default async function DashboardPage({
                   </td>
                   <td className="p-4">
                     <DeleteGuestForm guestId={guest.id} name={guest.name} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="font-semibold mb-4">The Wall ({allNotes.length})</h2>
+        <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-200 text-left">
+                <th className="p-4 font-medium text-zinc-500">Note</th>
+                <th className="p-4 font-medium text-zinc-500">From</th>
+                <th className="p-4 font-medium text-zinc-500">Date</th>
+                <th className="p-4 font-medium text-zinc-500"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {allNotes.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-zinc-400">
+                    No notes on the wall yet.
+                  </td>
+                </tr>
+              )}
+              {allNotes.map((note) => (
+                <tr key={note.id} className="border-b border-zinc-100">
+                  <td className="p-4">{note.text}</td>
+                  <td className="p-4 text-zinc-500">{note.name}</td>
+                  <td className="p-4 text-zinc-400 whitespace-nowrap">
+                    {note.createdAt.toLocaleDateString()}
+                  </td>
+                  <td className="p-4">
+                    <DeleteNoteForm noteId={note.id} />
                   </td>
                 </tr>
               ))}

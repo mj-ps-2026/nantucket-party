@@ -1,0 +1,729 @@
+"use client"
+
+import Image from "next/image"
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
+import { PARTY, NOTE_TINTS, type GuestTile, type WallNote } from "@/lib/party"
+import { PartyButton, Stepper, Field, inputStyle, ScrollCue } from "./ui"
+
+export type RsvpChoice = "in" | "out"
+export type RsvpData = { name: string; email: string; guests: number; note: string }
+
+/* ---------- PART 2 — the invitation card ---------- */
+export function InvitationCard({
+  revealed,
+  onRsvp,
+  reduced,
+  titleTreatment = "napkin",
+  woodTone = "#b07c49",
+  invitedBy,
+}: {
+  revealed: boolean
+  onRsvp: () => void
+  reduced: boolean
+  titleTreatment?: "napkin" | "sign" | "poster"
+  woodTone?: string
+  invitedBy?: string
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (reduced) return
+    const el = cardRef.current
+    const wrap = wrapRef.current
+    if (!el || !wrap) return
+    let raf = 0
+    let tx = 0
+    let ty = 0
+    let cx = 0
+    let cy = 0
+    const onMove = (e: PointerEvent) => {
+      const r = wrap.getBoundingClientRect()
+      const px = (e.clientX - r.left) / r.width - 0.5
+      const py = (e.clientY - r.top) / r.height - 0.5
+      tx = py * -7
+      ty = px * 9
+    }
+    const onLeave = () => {
+      tx = 0
+      ty = 0
+    }
+    const loop = () => {
+      cx += (tx - cx) * 0.08
+      cy += (ty - cy) * 0.08
+      el.style.transform = `perspective(1100px) rotateX(${cx}deg) rotateY(${cy}deg)`
+      raf = requestAnimationFrame(loop)
+    }
+    wrap.addEventListener("pointermove", onMove)
+    wrap.addEventListener("pointerleave", onLeave)
+    loop()
+    return () => {
+      cancelAnimationFrame(raf)
+      wrap.removeEventListener("pointermove", onMove)
+      wrap.removeEventListener("pointerleave", onLeave)
+    }
+  }, [reduced])
+
+  return (
+    <section
+      className="picnic"
+      style={{
+        position: "relative",
+        minHeight: "100svh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "64px 0 48px",
+        textAlign: "center",
+        overflow: "hidden",
+        ["--wood-base" as string]: woodTone,
+        opacity: revealed ? 1 : 0,
+        transition: "opacity .3s var(--ease)",
+      }}
+    >
+      <div
+        className={revealed && !reduced ? "fade-up" : ""}
+        style={{ position: "relative", zIndex: 1, animationDelay: "1s" }}
+      >
+        <span
+          className="kicker"
+          style={{
+            color: "var(--ink)",
+            background: "var(--sunny)",
+            padding: "7px 16px",
+            borderRadius: 999,
+            border: "3px solid var(--ink)",
+            display: "inline-block",
+            boxShadow: "var(--pop-shadow)",
+          }}
+        >
+          {invitedBy ? `${invitedBy} invited you 🎈` : "You're invited 🎈"}
+        </span>
+      </div>
+
+      {/* the card = the hero illustration, tossed onto the table */}
+      <div
+        ref={wrapRef}
+        className={revealed && !reduced ? "toss" : ""}
+        style={{ position: "relative", zIndex: 1, margin: "26px 0 10px", width: "min(880px, 92vw)", perspective: 1100 }}
+      >
+        <div
+          ref={cardRef}
+          style={{
+            position: "relative",
+            borderRadius: "var(--r-lg)",
+            background: "#fff",
+            border: "10px solid #fff",
+            boxShadow: "0 2px 0 rgba(46,32,22,.06), 0 40px 70px -24px rgba(46,32,22,.5)",
+            transform: "perspective(1100px) rotateX(0deg) rotateY(0deg)",
+            transformStyle: "preserve-3d",
+            overflow: "hidden",
+          }}
+        >
+          <Image
+            src="/hero-illustration.jpg"
+            alt="Foam Party & Pig Roast — a sunny backyard with a foam cannon, pig on a spit, balloons and kids playing in the suds"
+            width={1408}
+            height={768}
+            priority
+            style={{ display: "block", width: "100%", height: "auto", borderRadius: "calc(var(--r-lg) - 8px)" }}
+          />
+        </div>
+      </div>
+
+      {/* party details */}
+      <div
+        className={revealed && !reduced ? "fade-up" : ""}
+        style={{ position: "relative", zIndex: 1, animationDelay: "1.15s", marginTop: 30, width: "min(900px, 92vw)" }}
+      >
+        <TitleBlock treatment={titleTreatment} onRsvp={onRsvp} />
+      </div>
+    </section>
+  )
+}
+
+/* shared detail chips */
+function ChipsRow() {
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+      <DetailChip c="var(--tomato)">{PARTY.date}</DetailChip>
+      <DetailChip c="var(--teal)">{PARTY.time}</DetailChip>
+      <DetailChip c="var(--pink)">{PARTY.address}</DetailChip>
+    </div>
+  )
+}
+
+/* cream pill so the scroll cue stays legible on any surface */
+function CuePill({ onRsvp }: { onRsvp: () => void }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        marginTop: 26,
+        background: "var(--cream)",
+        borderRadius: 999,
+        padding: "6px 18px 10px",
+        boxShadow: "var(--pop-shadow)",
+        border: "3px solid #fff",
+      }}
+    >
+      <ScrollCue label="RSVP — it takes 10 seconds" onClick={onRsvp} />
+    </span>
+  )
+}
+
+/* THE TITLE TREATMENTS — "napkin" is the locked default; sign/poster kept as options */
+function TitleBlock({ treatment, onRsvp }: { treatment: "napkin" | "sign" | "poster"; onRsvp: () => void }) {
+  const titleBase = {
+    fontFamily: "var(--display)",
+    fontWeight: 700,
+    textTransform: "uppercase" as const,
+    letterSpacing: "-.01em",
+    textWrap: "balance" as const,
+    margin: 0,
+    fontSize: "clamp(26px,5vw,46px)",
+    lineHeight: 1.04,
+  }
+
+  /* ---- ENAMEL SIGN ---- */
+  if (treatment === "sign") {
+    const screw = {
+      position: "absolute" as const,
+      width: 12,
+      height: 12,
+      borderRadius: "50%",
+      background: "radial-gradient(circle at 35% 30%, #fff, #b9ad95)",
+      boxShadow: "inset 0 -1px 2px rgba(0,0,0,.3)",
+    }
+    return (
+      <div>
+        <div
+          style={{
+            display: "inline-block",
+            position: "relative",
+            maxWidth: "min(660px,92vw)",
+            background: "var(--cream)",
+            borderRadius: 22,
+            border: "6px solid #fff",
+            boxShadow: "var(--sticker-shadow)",
+            padding: "clamp(22px,4vw,36px) clamp(28px,5vw,52px)",
+            transform: "rotate(-1deg)",
+          }}
+        >
+          <span style={{ ...screw, top: 12, left: 14 }} />
+          <span style={{ ...screw, top: 12, right: 14 }} />
+          <span style={{ ...screw, bottom: 12, left: 14 }} />
+          <span style={{ ...screw, bottom: 12, right: 14 }} />
+          <h1 style={{ ...titleBase, color: "var(--ink)", textShadow: "0 2px 0 rgba(255,255,255,.7)" }}>
+            {PARTY.title}
+          </h1>
+          <div style={{ marginTop: 22 }}>
+            <ChipsRow />
+          </div>
+          <p
+            style={{
+              fontFamily: "var(--display)",
+              fontWeight: 500,
+              fontSize: "clamp(16px,3.4vw,22px)",
+              color: "var(--wood-deep)",
+              margin: "20px auto 0",
+              maxWidth: 480,
+            }}
+          >
+            “{PARTY.note}”
+          </p>
+        </div>
+        <div>
+          <CuePill onRsvp={onRsvp} />
+        </div>
+      </div>
+    )
+  }
+
+  /* ---- POSTER ---- */
+  if (treatment === "poster") {
+    return (
+      <div>
+        <h1
+          style={{
+            ...titleBase,
+            fontSize: "clamp(28px,5vw,50px)",
+            color: "#FFFAEF",
+            maxWidth: "min(760px, 92vw)",
+            marginLeft: "auto",
+            marginRight: "auto",
+            WebkitTextStroke: "2.5px #44280f",
+            textShadow: "0 4px 0 rgba(46,27,12,.5), 0 12px 22px rgba(0,0,0,.45)",
+            paintOrder: "stroke fill",
+          }}
+        >
+          {PARTY.title}
+        </h1>
+        <div style={{ marginTop: 24 }}>
+          <ChipsRow />
+        </div>
+        <p
+          style={{
+            display: "inline-block",
+            marginTop: 22,
+            fontFamily: "var(--display)",
+            fontWeight: 600,
+            fontSize: "clamp(15px,3.2vw,21px)",
+            color: "var(--ink)",
+            background: "#EDDBBE",
+            border: "3px solid #fff",
+            borderRadius: 10,
+            padding: "10px 20px",
+            transform: "rotate(-1.2deg)",
+            boxShadow: "var(--pop-shadow)",
+          }}
+        >
+          “{PARTY.note}”
+        </p>
+        <div>
+          <CuePill onRsvp={onRsvp} />
+        </div>
+      </div>
+    )
+  }
+
+  /* ---- PICNIC NAPKIN (default) ---- */
+  const gingham = {
+    backgroundColor: "#fff",
+    backgroundImage:
+      "repeating-linear-gradient(0deg, rgba(208,42,38,.55) 0 26px, rgba(208,42,38,0) 26px 52px)," +
+      "repeating-linear-gradient(90deg, rgba(208,42,38,.55) 0 26px, rgba(208,42,38,0) 26px 52px)",
+  }
+  return (
+    <div>
+      <div
+        style={{
+          display: "inline-block",
+          position: "relative",
+          ...gingham,
+          borderRadius: 10,
+          padding: "clamp(22px,4vw,34px) clamp(30px,6vw,56px)",
+          boxShadow: "0 16px 34px -12px rgba(46,32,22,.55)",
+          transform: "rotate(-1.2deg)",
+          outline: "2px dashed rgba(255,255,255,.85)",
+          outlineOffset: -12,
+        }}
+      >
+        <h1
+          style={{
+            ...titleBase,
+            fontSize: "clamp(28px,5.4vw,52px)",
+            color: "#fff",
+            WebkitTextStroke: "2.5px #8d1c16",
+            paintOrder: "stroke fill",
+            textShadow: "0 3px 0 rgba(80,16,12,.45)",
+          }}
+        >
+          {PARTY.title}
+        </h1>
+      </div>
+      <div style={{ marginTop: 22 }}>
+        <ChipsRow />
+      </div>
+      <p
+        style={{
+          display: "inline-block",
+          marginTop: 20,
+          fontFamily: "var(--display)",
+          fontWeight: 600,
+          fontSize: "clamp(15px,3.2vw,21px)",
+          color: "var(--ink)",
+          background: "#fff",
+          borderRadius: 6,
+          padding: "9px 20px",
+          transform: "rotate(1deg)",
+          boxShadow: "0 8px 16px -6px rgba(46,32,22,.4)",
+        }}
+      >
+        “{PARTY.note}”
+      </p>
+      <div>
+        <CuePill onRsvp={onRsvp} />
+      </div>
+    </div>
+  )
+}
+
+function DetailChip({ children, c }: { children: ReactNode; c: string }) {
+  return (
+    <span
+      style={{
+        fontFamily: "var(--display)",
+        fontWeight: 600,
+        fontSize: "clamp(15px,3.4vw,21px)",
+        color: "var(--ink)",
+        background: "#fff",
+        border: `3px solid ${c}`,
+        borderRadius: 999,
+        padding: "9px 20px",
+        boxShadow: "var(--pop-shadow)",
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+function SectionHead({ children, color }: { children: ReactNode; color?: string }) {
+  return (
+    <div style={{ position: "relative", display: "inline-block", marginBottom: 26 }}>
+      <h2
+        style={{
+          fontSize: "clamp(30px,7vw,52px)",
+          textTransform: "uppercase",
+          color: color || "var(--ink)",
+          letterSpacing: "-.01em",
+          textShadow: "0 3px 0 rgba(255,255,255,.6)",
+        }}
+      >
+        {children}
+      </h2>
+    </div>
+  )
+}
+
+/* ---------- PART 3 — the RSVP ---------- */
+export function Rsvp({
+  onSubmit,
+  reduced,
+  pending,
+  defaultName,
+}: {
+  onSubmit: (choice: RsvpChoice, data: RsvpData) => void
+  reduced: boolean
+  pending: boolean
+  defaultName?: string
+}) {
+  const [choice, setChoice] = useState<RsvpChoice | null>(null)
+  const [name, setName] = useState(defaultName || "")
+  const [email, setEmail] = useState("")
+  const [guests, setGuests] = useState(1)
+  const [note, setNote] = useState("")
+  const [err, setErr] = useState(false)
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) {
+      setErr(true)
+      return
+    }
+    onSubmit(choice!, {
+      name: name.trim(),
+      email: email.trim(),
+      guests: choice === "in" ? guests : 0,
+      note: note.trim(),
+    })
+  }
+
+  return (
+    <section id="rsvp" style={{ padding: "30px 0 70px" }}>
+      <div className="wrap" style={{ maxWidth: 640 }}>
+        <div
+          style={{
+            position: "relative",
+            background: "var(--cream)",
+            borderRadius: "var(--r-lg)",
+            border: "var(--bord) solid #fff",
+            padding: "clamp(26px,5vw,44px)",
+            boxShadow: "var(--sticker-shadow)",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <SectionHead color="var(--ink)">Are you coming?</SectionHead>
+          </div>
+
+          {/* two big choices */}
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
+            <PartyButton
+              variant="go"
+              big
+              onClick={() => {
+                setChoice("in")
+                setErr(false)
+              }}
+              style={choice === "in" ? { outline: "4px solid var(--ink)", outlineOffset: 3 } : {}}
+            >
+              I&apos;m in! 🙌
+            </PartyButton>
+            <PartyButton
+              variant="ghost"
+              onClick={() => {
+                setChoice("out")
+                setErr(false)
+              }}
+              style={choice === "out" ? { outline: "4px solid var(--ink)", outlineOffset: 3 } : {}}
+            >
+              Can&apos;t make it
+            </PartyButton>
+          </div>
+
+          {/* progressive reveal */}
+          {choice && (
+            <form
+              onSubmit={submit}
+              className={reduced ? "" : "fade-up"}
+              style={{ marginTop: 30, display: "grid", gap: 20 }}
+            >
+              <Field label="Your name" hint="required">
+                <input
+                  style={{ ...inputStyle, borderColor: err ? "var(--tomato)" : "#e7ddca" }}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    setErr(false)
+                  }}
+                  placeholder="e.g. Jordan"
+                  autoComplete="name"
+                />
+                {err && (
+                  <span style={{ color: "var(--tomato)", fontWeight: 600, fontSize: 14 }}>
+                    We need a name to put you on the wall!
+                  </span>
+                )}
+              </Field>
+
+              {choice === "in" && (
+                <Field label="How many of you?">
+                  <Stepper value={guests} onChange={setGuests} />
+                </Field>
+              )}
+
+              <Field label="Email" hint="optional — for a confirmation">
+                <input
+                  style={inputStyle}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@email.com"
+                  autoComplete="email"
+                />
+              </Field>
+
+              <Field label="Anything to say?" hint="optional">
+                <input
+                  style={inputStyle}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={choice === "in" ? "bringing a watermelon 🍉" : "next time for sure!"}
+                  maxLength={90}
+                />
+              </Field>
+
+              <PartyButton type="submit" variant={choice === "in" ? "primary" : "sunny"} big full disabled={pending}>
+                {pending ? "One sec…" : choice === "in" ? "Lock it in 🫧" : "Send my regrets"}
+              </PartyButton>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------- PART 4 — who's going ---------- */
+export function Going({
+  guests,
+  regrets,
+  newId,
+  listRef,
+}: {
+  guests: GuestTile[]
+  regrets: number
+  newId: string | null
+  listRef: RefObject<HTMLElement | null>
+}) {
+  const total = guests.reduce((s, g) => s + g.guests, 0)
+  return (
+    <section ref={listRef} style={{ padding: "20px 0 60px" }}>
+      <div className="wrap">
+        <div style={{ textAlign: "center" }}>
+          <SectionHead color="var(--grass-deep)">
+            Going (<span style={{ color: "var(--tomato)" }}>{total}</span>)
+          </SectionHead>
+          <p style={{ marginTop: -10, marginBottom: 24, fontWeight: 600, color: "var(--wood-deep)" }}>
+            {guests.length} crews and counting · the backyard&apos;s filling up 🎉
+          </p>
+        </div>
+        <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+          {guests.map((g, i) => (
+            <div
+              key={g.id}
+              className={g.id === newId ? "pop" : ""}
+              style={{
+                position: "relative",
+                background: "#fff",
+                borderRadius: "var(--r-md)",
+                border: g.id === newId ? "3px solid var(--tomato)" : "3px solid #fff",
+                boxShadow: "var(--pop-shadow)",
+                padding: "18px 16px",
+                textAlign: "center",
+                transform: `rotate(${((i * 7) % 5) - 2}deg)`,
+              }}
+            >
+              <div style={{ fontSize: 38, lineHeight: 1 }}>{g.emoji}</div>
+              <div
+                style={{
+                  fontFamily: "var(--display)",
+                  fontWeight: 600,
+                  fontSize: 17,
+                  color: "var(--ink)",
+                  marginTop: 8,
+                  wordBreak: "break-word",
+                }}
+              >
+                {g.name}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--ink-soft)", fontWeight: 600, marginTop: 2 }}>
+                {g.guests === 1 ? "just them" : `party of ${g.guests}`}
+              </div>
+              {g.id === newId && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -12,
+                    right: -8,
+                    background: "var(--tomato)",
+                    color: "#fff",
+                    fontFamily: "var(--display)",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    padding: "4px 9px",
+                    borderRadius: 999,
+                    transform: "rotate(8deg)",
+                    boxShadow: "var(--pop-shadow)",
+                  }}
+                >
+                  that&apos;s you!
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {regrets > 0 && (
+          <p style={{ textAlign: "center", marginTop: 22, color: "var(--ink-soft)", fontSize: 14, fontWeight: 600 }}>
+            {regrets} can&apos;t make it this time 🫶
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/* ---------- PART 5 — the comment wall ---------- */
+export function Wall({
+  notes,
+  onPost,
+  newNoteId,
+}: {
+  notes: WallNote[]
+  onPost: (n: { name: string; text: string }) => void
+  newNoteId: string | null
+}) {
+  const [name, setName] = useState("")
+  const [text, setText] = useState("")
+  const post = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!text.trim()) return
+    onPost({ name: name.trim() || "Anonymous", text: text.trim() })
+    setText("")
+  }
+  return (
+    <section style={{ padding: "20px 0 120px" }}>
+      <div className="wrap">
+        <div style={{ textAlign: "center" }}>
+          <SectionHead color="var(--pink)">The Wall</SectionHead>
+          <p style={{ marginTop: -10, marginBottom: 24, fontWeight: 600, color: "var(--wood-deep)" }}>
+            Leave a note — hype, threats, potluck claims, all welcome
+          </p>
+        </div>
+
+        {/* post box */}
+        <form
+          onSubmit={post}
+          style={{
+            background: "#fff",
+            borderRadius: "var(--r-md)",
+            border: "var(--bord) solid #fff",
+            boxShadow: "var(--pop-shadow)",
+            padding: 16,
+            display: "grid",
+            gap: 12,
+            gridTemplateColumns: "1fr",
+            maxWidth: 620,
+            margin: "0 auto 32px",
+          }}
+        >
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <input
+              style={{ ...inputStyle, flex: "1 1 140px" }}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="your name (optional)"
+              maxLength={40}
+            />
+            <input
+              style={{ ...inputStyle, flex: "3 1 220px" }}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="leave a note…"
+              maxLength={120}
+            />
+          </div>
+          <PartyButton type="submit" variant="sunny" full>
+            Stick it on the wall 📌
+          </PartyButton>
+        </form>
+
+        {/* sticky note wall */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 18, justifyContent: "center" }}>
+          {notes.map((n, i) => {
+            const tint = NOTE_TINTS[n.tint % NOTE_TINTS.length]
+            const rot = ((i * 11) % 7) - 3
+            return (
+              <div
+                key={n.id}
+                className={n.id === newNoteId ? "note" : ""}
+                style={{
+                  ["--rot" as string]: `${rot}deg`,
+                  position: "relative",
+                  transform: `rotate(${rot}deg)`,
+                  width: "min(260px, 78vw)",
+                  background: tint.bg,
+                  borderRadius: 8,
+                  padding: "18px 18px 20px",
+                  boxShadow: "0 10px 22px -8px rgba(46,32,22,.35)",
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -9,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: tint.pin,
+                    boxShadow: "inset -2px -2px 3px rgba(0,0,0,.25), 0 3px 5px rgba(0,0,0,.25)",
+                  }}
+                />
+                <p style={{ margin: "4px 0 10px", fontSize: 17, color: "var(--ink)", lineHeight: 1.32, fontWeight: 500 }}>
+                  {n.text}
+                </p>
+                <div style={{ fontFamily: "var(--display)", fontWeight: 600, fontSize: 14, color: "var(--wood-deep)" }}>
+                  — {n.name}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}

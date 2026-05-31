@@ -20,10 +20,11 @@ export async function GET(request: Request) {
     )
     .orderBy(desc(guests.createdAt))
 
-  const headerRow = ["Name", "Email", "Party Size", "Dietary Restrictions", "Message", "Date"]
+  const headerRow = ["Name", "Email", "Status", "Party Size", "Dietary Restrictions", "Message", "Date"]
   const dataRows = allGuests.map((g) => [
     g.name,
-    g.email,
+    g.email || "",
+    g.status === "regret" ? "Can't make it" : "Going",
     String(g.partySize),
     g.dietaryRestrictions || "",
     g.message || "",
