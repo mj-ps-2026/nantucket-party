@@ -4,9 +4,14 @@ import { getDb } from "@/db"
 import { guests, invites, notes } from "@/db/schema"
 import { sendConfirmationEmail, sendHostNotification } from "@/lib/email"
 import { emojiFor, NOTE_TINTS, type GuestTile, type WallNote } from "@/lib/party"
+import { clientIp, looksLikeSpam, rateLimit, verifyTurnstile } from "@/lib/spam"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+
+// per-IP submission caps (sliding window)
+const RSVP_LIMIT = { max: 5, windowSeconds: 5 * 60 }
+const NOTE_LIMIT = { max: 5, windowSeconds: 5 * 60 }
 
 /* ---------- RSVP ---------- */
 
@@ -20,6 +25,8 @@ const rsvpSchema = z.object({
   // honeypot + speed-check (carried over from the original form)
   website: z.string().optional(),
   loadedAt: z.string().optional(),
+  // Cloudflare Turnstile token
+  turnstileToken: z.string().optional(),
 })
 
 export type PartyRsvpResult =
@@ -33,7 +40,7 @@ export async function submitPartyRSVP(formData: FormData): Promise<PartyRsvpResu
     return { ok: false, error: first?.message || "Something looked off — give it another go." }
   }
 
-  const { choice, name, email, guests: headcount, note, inviteToken, website, loadedAt } = parsed.data
+  const { choice, name, email, guests: headcount, note, inviteToken, website, loadedAt, turnstileToken } = parsed.data
 
   // honeypot: a bot filled the hidden field — pretend success, store nothing
   if (website) return { ok: true, guest: null, note: null }
@@ -42,6 +49,21 @@ export async function submitPartyRSVP(formData: FormData): Promise<PartyRsvpResu
   if (loadedAt) {
     const elapsed = Date.now() - Number(loadedAt)
     if (Number.isFinite(elapsed) && elapsed < 3000) return { ok: true, guest: null, note: null }
+  }
+
+  // content filter: links/spam terms — silently dropped, like the honeypot
+  if (looksLikeSpam(name, note)) return { ok: true, guest: null, note: null }
+
+  const ip = await clientIp()
+
+  // captcha: once Turnstile is configured, a missing/invalid token is rejected
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    return { ok: false, error: "Couldn't verify you're human — give it a refresh and try again." }
+  }
+
+  // rate limit: stop a single source from flooding the guest list
+  if (!(await rateLimit(`rsvp:${ip}`, RSVP_LIMIT.max, RSVP_LIMIT.windowSeconds))) {
+    return { ok: false, error: "Whoa, slow down a sec — try again in a few minutes." }
   }
 
   const going = choice === "in"
@@ -128,13 +150,48 @@ export async function submitPartyRSVP(formData: FormData): Promise<PartyRsvpResu
 
 /* ---------- the wall ---------- */
 
-const noteSchema = z.object({ name: z.string().max(40).optional(), text: z.string().min(1).max(120) })
+const noteSchema = z.object({
+  name: z.string().max(40).optional(),
+  text: z.string().min(1).max(120),
+  // honeypot + speed-check + captcha (mirrors the RSVP form's defenses)
+  website: z.string().optional(),
+  loadedAt: z.string().optional(),
+  turnstileToken: z.string().optional(),
+})
 
-export async function postWallNote(input: { name?: string; text: string }): Promise<WallNote | null> {
+export async function postWallNote(input: {
+  name?: string
+  text: string
+  website?: string
+  loadedAt?: string
+  turnstileToken?: string
+}): Promise<WallNote | null> {
   const parsed = noteSchema.safeParse(input)
   if (!parsed.success) return null
+
+  // honeypot: a bot filled the hidden field — silently drop it
+  if (parsed.data.website) return null
+
+  // speed-check: posted impossibly fast — silently drop it
+  if (parsed.data.loadedAt) {
+    const elapsed = Date.now() - Number(parsed.data.loadedAt)
+    if (Number.isFinite(elapsed) && elapsed < 3000) return null
+  }
+
   const name = parsed.data.name?.trim() || "Anonymous"
   const text = parsed.data.text.trim()
+
+  // content filter: links/spam terms — silently dropped
+  if (looksLikeSpam(name, text)) return null
+
+  const ip = await clientIp()
+
+  // captcha: once Turnstile is configured, a missing/invalid token is rejected
+  if (!(await verifyTurnstile(parsed.data.turnstileToken, ip))) return null
+
+  // rate limit: stop a single source from flooding the wall
+  if (!(await rateLimit(`note:${ip}`, NOTE_LIMIT.max, NOTE_LIMIT.windowSeconds))) return null
+
   const tint = tintFor(name + text)
 
   try {

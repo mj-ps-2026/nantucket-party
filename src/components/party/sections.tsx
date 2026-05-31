@@ -4,9 +4,10 @@ import Image from "next/image"
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
 import { PARTY, NOTE_TINTS, type GuestTile, type WallNote } from "@/lib/party"
 import { PartyButton, Stepper, Field, inputStyle, ScrollCue } from "./ui"
+import { Turnstile } from "../turnstile"
 
 export type RsvpChoice = "in" | "out"
-export type RsvpData = { name: string; email: string; guests: number; note: string }
+export type RsvpData = { name: string; email: string; guests: number; note: string; token: string | null }
 
 /* ---------- PART 2 — the invitation card ---------- */
 export function InvitationCard({
@@ -406,6 +407,8 @@ export function Rsvp({
   const [guests, setGuests] = useState(1)
   const [note, setNote] = useState("")
   const [err, setErr] = useState(false)
+  const [token, setToken] = useState<string | null>(null)
+  const [tsReset, setTsReset] = useState(0)
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -418,7 +421,11 @@ export function Rsvp({
       email: email.trim(),
       guests: choice === "in" ? guests : 0,
       note: note.trim(),
+      token,
     })
+    // the token is single-use — fetch a fresh one in case they submit again
+    setToken(null)
+    setTsReset((n) => n + 1)
   }
 
   return (
@@ -514,6 +521,8 @@ export function Rsvp({
                   maxLength={90}
                 />
               </Field>
+
+              <Turnstile onToken={setToken} resetSignal={tsReset} />
 
               <PartyButton type="submit" variant={choice === "in" ? "primary" : "sunny"} big full disabled={pending}>
                 {pending ? "One sec…" : choice === "in" ? "Lock it in 🫧" : "Send my regrets"}
@@ -622,16 +631,21 @@ export function Wall({
   newNoteId,
 }: {
   notes: WallNote[]
-  onPost: (n: { name: string; text: string }) => void
+  onPost: (n: { name: string; text: string; token: string | null }) => void
   newNoteId: string | null
 }) {
   const [name, setName] = useState("")
   const [text, setText] = useState("")
+  const [token, setToken] = useState<string | null>(null)
+  const [tsReset, setTsReset] = useState(0)
   const post = (e: React.FormEvent) => {
     e.preventDefault()
     if (!text.trim()) return
-    onPost({ name: name.trim() || "Anonymous", text: text.trim() })
+    onPost({ name: name.trim() || "Anonymous", text: text.trim(), token })
     setText("")
+    // the token is single-use — the wall takes repeat posts, so refresh it
+    setToken(null)
+    setTsReset((n) => n + 1)
   }
   return (
     <section style={{ padding: "20px 0 120px" }}>
@@ -675,6 +689,7 @@ export function Wall({
               maxLength={120}
             />
           </div>
+          <Turnstile onToken={setToken} resetSignal={tsReset} />
           <PartyButton type="submit" variant="sunny" full>
             Stick it on the wall 📌
           </PartyButton>

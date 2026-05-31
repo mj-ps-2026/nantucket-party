@@ -99,6 +99,7 @@ export function PartyExperience({
     if (inviteToken) fd.set("inviteToken", inviteToken)
     fd.set("website", honeypotRef.current?.value || "")
     fd.set("loadedAt", String(loadedAt.current))
+    fd.set("turnstileToken", data.token || "")
 
     let result
     try {
@@ -127,12 +128,18 @@ export function PartyExperience({
     setTimeout(() => finish(g, guest, note), TIMING.clearHold + 700)
   }
 
-  async function handlePost({ name, text }: { name: string; text: string }) {
+  async function handlePost({ name, text, token }: { name: string; text: string; token: string | null }) {
     const tempId = `tmp-${Date.now()}`
     const temp: WallNote = { id: tempId, name: name || "Anonymous", text, tint: 0 }
     setNotes((arr) => [temp, ...arr])
     setNewNoteId(tempId)
-    const saved = await postWallNote({ name, text })
+    const saved = await postWallNote({
+      name,
+      text,
+      turnstileToken: token || "",
+      website: honeypotRef.current?.value || "",
+      loadedAt: String(loadedAt.current),
+    })
     if (saved) {
       setNotes((arr) => arr.map((n) => (n.id === tempId ? saved : n)))
       setNewNoteId(saved.id)
