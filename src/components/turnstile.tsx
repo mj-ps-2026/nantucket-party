@@ -16,9 +16,26 @@ declare global {
   }
 }
 
-export function Turnstile({ onToken }: { onToken: (token: string | null) => void }) {
+export function Turnstile({
+  onToken,
+  resetSignal = 0,
+}: {
+  onToken: (token: string | null) => void
+  // bump this to force a fresh challenge — Turnstile tokens are single-use,
+  // so a form that submits more than once (the wall) needs a new one each time
+  resetSignal?: number
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetId = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (resetSignal === 0) return
+    if (widgetId.current && window.turnstile) {
+      window.turnstile.reset(widgetId.current)
+      onToken(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetSignal])
 
   useEffect(() => {
     if (!containerRef.current) return
