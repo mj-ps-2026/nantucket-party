@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="snout" cx="42%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#FBB6C9"/>
+      <stop offset="100%" stop-color="#EC7CA0"/>
+    </radialGradient>
+  </defs>
+  <!-- snout -->
+  <ellipse cx="32" cy="33" rx="28" ry="23" fill="url(#snout)" stroke="#D85F87" stroke-width="2"/>
+  <!-- shine -->
+  <ellipse cx="22" cy="20" rx="9" ry="5" fill="#FFFFFF" opacity="0.45"/>
+  <!-- nostrils -->
+  <ellipse cx="23" cy="34" rx="4.5" ry="8" fill="#8C3559"/>
+  <ellipse cx="41" cy="34" rx="4.5" ry="8" fill="#8C3559"/>
+</svg>
