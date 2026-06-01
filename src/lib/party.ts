@@ -3,10 +3,63 @@
 export const PARTY = {
   title: "Foam Party & Pig Roast",
   date: "Saturday, June 27th",
-  time: "1:00 PM",
+  time: "2:00 PM",
   address: "3040 Nantucket Dr",
   note: "Bring a towel. Leave your dignity at home.",
 }
+
+// the day's loose plan — rendered as the "Suds & Swine" timeline
+export type AgendaItem = {
+  time: string
+  meridiem: string
+  title: string
+  body: string
+  emoji: string
+  accent: string
+}
+
+export const AGENDA: AgendaItem[] = [
+  {
+    time: "2:00",
+    meridiem: "PM",
+    title: "Arrivals & Apps",
+    body: "Low-key music, snacks, and cold drinks. Roll in whenever.",
+    emoji: "🧺",
+    accent: "var(--tomato)",
+  },
+  {
+    time: "3:00",
+    meridiem: "PM",
+    title: "Foam Cannon Fires",
+    body: "The 90-minute foam window begins. Suit up.",
+    emoji: "🫧",
+    accent: "var(--teal)",
+  },
+  {
+    time: "4:00",
+    meridiem: "PM",
+    title: "The Peak",
+    body: "Everyone's in the foam and the pig smells amazing.",
+    emoji: "🐷",
+    accent: "var(--sunny)",
+  },
+  {
+    time: "4:30",
+    meridiem: "PM",
+    title: "Foam Off / Rinse Down",
+    body: "Kids dry off and change clothes. Towels by the hose.",
+    emoji: "🚿",
+    accent: "var(--pink)",
+  },
+  {
+    time: "5:00",
+    meridiem: "PM",
+    title: "The Big Reveal",
+    body: "We carve and serve the pig. Come hungry.",
+    emoji: "🍖",
+    accent: "var(--sky-deep)",
+  },
+]
 
 export const PARTY_EMOJI = ["🦄", "🐷", "🫧", "🍻", "🎈", "🌭", "🍉", "🌈", "☀️", "🏖️"]
 
