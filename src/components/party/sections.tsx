@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
 import { PARTY, NOTE_TINTS, AGENDA, type GuestTile, type WallNote } from "@/lib/party"
-import { PartyButton, Stepper, Field, inputStyle, ScrollCue } from "./ui"
+import { PartyButton, Stepper, Field, inputStyle } from "./ui"
 import { Turnstile } from "../turnstile"
 
 export type RsvpChoice = "in" | "out"
@@ -155,22 +155,59 @@ function ChipsRow() {
   )
 }
 
-/* cream pill so the scroll cue stays legible on any surface */
+/* cream pill (legible on any surface) with the bouncing arrow detached
+   below it, so the arrow animates on its own — not inside the button */
 function CuePill({ onRsvp }: { onRsvp: () => void }) {
   return (
-    <span
+    <div
       style={{
-        display: "inline-block",
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 12,
         marginTop: 26,
-        background: "var(--cream)",
-        borderRadius: 999,
-        padding: "6px 18px 10px",
-        boxShadow: "var(--pop-shadow)",
-        border: "3px solid #fff",
       }}
     >
-      <ScrollCue label="RSVP — it takes 10 seconds" onClick={onRsvp} />
-    </span>
+      <button
+        type="button"
+        onClick={onRsvp}
+        className="cue"
+        style={{
+          fontFamily: "var(--display)",
+          fontWeight: 600,
+          fontSize: "clamp(13px,3vw,15px)",
+          textTransform: "uppercase",
+          letterSpacing: ".1em",
+          color: "var(--ink)",
+          background: "var(--cream)",
+          borderRadius: 999,
+          border: "3px solid #fff",
+          padding: "13px 30px",
+          boxShadow: "var(--pop-shadow)",
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        RSVP — it takes 10 seconds
+      </button>
+      <svg
+        width="34"
+        height="34"
+        viewBox="0 0 24 24"
+        fill="none"
+        className="cue-arrow"
+        aria-hidden="true"
+        style={{ color: "var(--ink)", filter: "drop-shadow(0 1px 1px rgba(255,255,255,.7))" }}
+      >
+        <path
+          d="M12 4v14M6 13l6 6 6-6"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
   )
 }
 
@@ -633,7 +670,7 @@ export function Going({
             Going (<span style={{ color: "var(--tomato)" }}>{total}</span>)
           </SectionHead>
           <p style={{ marginTop: -10, marginBottom: 24, fontWeight: 600, color: "var(--wood-deep)" }}>
-            {guests.length} crews and counting · the backyard&apos;s filling up 🎉
+            {`${guests.length} crews and counting · the backyard's filling up 🎉`}
           </p>
         </div>
         <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
