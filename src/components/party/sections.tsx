@@ -508,6 +508,18 @@ export function Rsvp({
         >
           <div style={{ textAlign: "center" }}>
             <SectionHead color="var(--ink)">Are you coming?</SectionHead>
+            <p
+              style={{
+                marginTop: -14,
+                marginBottom: 24,
+                fontFamily: "var(--display)",
+                fontWeight: 600,
+                fontSize: "clamp(14px,3vw,17px)",
+                color: "var(--wood-deep)",
+              }}
+            >
+              Kindly RSVP by <span style={{ color: "var(--tomato)" }}>{PARTY.rsvpBy}</span> 🫧
+            </p>
           </div>
 
           {/* two big choices */}
