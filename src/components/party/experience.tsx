@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { TIMING, type GuestTile, type WallNote } from "@/lib/party"
 import { submitPartyRSVP, postWallNote } from "@/app/party-actions"
-import { InvitationCard, Rsvp, Going, Wall, type RsvpChoice, type RsvpData } from "./sections"
+import { InvitationCard, Agenda, Rsvp, Going, Wall, type RsvpChoice, type RsvpData } from "./sections"
 import { Burst, DieCutSticker } from "./ui"
 import { FoamLayer } from "./foam-layer"
 import type { FoamHandle } from "@/lib/foam"
@@ -178,6 +178,8 @@ export function PartyExperience({
         invitedBy={invitedBy}
         onRsvp={() => scrollToEl(rsvpRef.current)}
       />
+
+      <Agenda reduced={reduced} />
 
       <div ref={rsvpRef}>
         <Rsvp onSubmit={handleSubmit} reduced={reduced} pending={pending} defaultName={defaultName} />

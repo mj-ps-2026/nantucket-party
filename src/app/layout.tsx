@@ -28,7 +28,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: "Foam Party & Pig Roast — You're Invited",
-  description: "Saturday, June 27th · 1:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds.",
+  description: "Saturday, June 27th · 2:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds.",
 }
 
 export default function RootLayout({

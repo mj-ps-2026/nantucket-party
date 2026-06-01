@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
-import { PARTY, NOTE_TINTS, type GuestTile, type WallNote } from "@/lib/party"
+import { PARTY, NOTE_TINTS, AGENDA, type GuestTile, type WallNote } from "@/lib/party"
 import { PartyButton, Stepper, Field, inputStyle, ScrollCue } from "./ui"
 import { Turnstile } from "../turnstile"
 
@@ -386,6 +386,71 @@ function SectionHead({ children, color }: { children: ReactNode; color?: string 
         {children}
       </h2>
     </div>
+  )
+}
+
+/* ---------- PART 2.5 — the agenda / "Suds & Swine" timeline ---------- */
+export function Agenda({ reduced }: { reduced: boolean }) {
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const list = listRef.current
+    if (!list) return
+    const rows = Array.from(list.querySelectorAll<HTMLElement>(".agenda-row"))
+
+    // reduced motion (or no observer support) → reveal everything up front
+    if (reduced || typeof IntersectionObserver === "undefined") {
+      rows.forEach((r) => r.classList.add("is-in"))
+      return
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in")
+            io.unobserve(e.target) // one-shot — it stays revealed
+          }
+        }
+      },
+      { threshold: 0.35, rootMargin: "0px 0px -8% 0px" },
+    )
+    rows.forEach((r) => io.observe(r))
+    return () => io.disconnect()
+  }, [reduced])
+
+  return (
+    <section id="the-plan" style={{ padding: "26px 0 56px", scrollMarginTop: 16 }}>
+      <div className="wrap">
+        <div style={{ textAlign: "center" }}>
+          <SectionHead color="var(--sky-deep)">The Plan</SectionHead>
+          <p style={{ marginTop: -10, marginBottom: 30, fontWeight: 600, color: "var(--wood-deep)" }}>
+            Our Suds &amp; Swine timeline — show up whenever, stay as long as you like 🫧
+          </p>
+        </div>
+
+        <div ref={listRef} className="agenda-list">
+          {AGENDA.map((item) => (
+            <div key={item.time} className="agenda-row" style={{ ["--accent" as string]: item.accent }}>
+              <div className="agenda-node" aria-hidden="true">
+                <span className="h">{item.time}</span>
+                <span className="m">{item.meridiem}</span>
+              </div>
+              <div className="agenda-card">
+                <span className="agenda-emoji" aria-hidden="true">
+                  {item.emoji}
+                </span>
+                <div className="agenda-title">
+                  <span className="sr-time">{`${item.time} ${item.meridiem} — `}</span>
+                  {item.title}
+                </div>
+                <p className="agenda-body">{item.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
