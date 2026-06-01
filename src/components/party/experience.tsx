@@ -5,6 +5,8 @@ import { TIMING, type GuestTile, type WallNote } from "@/lib/party"
 import { submitPartyRSVP, postWallNote } from "@/app/party-actions"
 import { InvitationCard, Rsvp, Going, Wall, type RsvpChoice, type RsvpData } from "./sections"
 import { Burst, DieCutSticker } from "./ui"
+import { FoamLayer } from "./foam-layer"
+import type { FoamHandle } from "@/lib/foam"
 
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)"
 function useReducedMotion() {
@@ -51,6 +53,7 @@ export function PartyExperience({
   const listRef = useRef<HTMLElement>(null)
   const rsvpRef = useRef<HTMLDivElement>(null)
   const honeypotRef = useRef<HTMLInputElement>(null)
+  const foamRef = useRef<FoamHandle>(null)
   const loadedAt = useRef(0)
 
   // mark the body so globals.css can paint the backyard background;
@@ -90,6 +93,10 @@ export function PartyExperience({
     setPending(true)
     setToast(null)
 
+    // suds start rising the instant they hit submit, covering the form
+    // while the request is in flight
+    if (!reduced) foamRef.current?.fill()
+
     const fd = new FormData()
     fd.set("choice", choice)
     fd.set("name", data.name)
@@ -111,6 +118,7 @@ export function PartyExperience({
     if (!result.ok) {
       setPending(false)
       setToast(result.error)
+      foamRef.current?.reset() // no payoff — wipe the suds away
       return
     }
 
@@ -123,7 +131,12 @@ export function PartyExperience({
     setPhase("success")
     setStickerShown(false)
     setBurstGo(false)
-    setTimeout(() => setStickerShown(true), 60)
+    setTimeout(() => {
+      setStickerShown(true)
+      // the success message lands and blows the foam off from the centre,
+      // revealing itself underneath (queues if the fill is still rising)
+      if (!reduced) foamRef.current?.blast()
+    }, 60)
     setTimeout(() => setBurstGo(true), 220)
     setTimeout(() => finish(g, guest, note), TIMING.clearHold + 700)
   }
@@ -179,6 +192,9 @@ export function PartyExperience({
           3040 Nantucket Dr · see you in the suds 🫧
         </div>
       </footer>
+
+      {/* soap-suds layer — fills on submit, blasts off on success */}
+      <FoamLayer ref={foamRef} />
 
       {/* success overlay */}
       {phase === "success" && (
