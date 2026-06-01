@@ -176,6 +176,7 @@ export function PartyExperience({
         revealed
         reduced={reduced}
         invitedBy={invitedBy}
+        titleTreatment="sign"
         onRsvp={() => scrollToEl(rsvpRef.current)}
       />
 

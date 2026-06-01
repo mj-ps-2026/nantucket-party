@@ -420,11 +420,11 @@ export function Agenda({ reduced }: { reduced: boolean }) {
   }, [reduced])
 
   return (
-    <section id="the-plan" style={{ padding: "26px 0 56px", scrollMarginTop: 16 }}>
+    <section id="the-plan" style={{ padding: "18px 0 40px", scrollMarginTop: 16 }}>
       <div className="wrap">
         <div style={{ textAlign: "center" }}>
           <SectionHead color="var(--sky-deep)">The Plan</SectionHead>
-          <p style={{ marginTop: -10, marginBottom: 30, fontWeight: 600, color: "var(--wood-deep)" }}>
+          <p style={{ marginTop: -10, marginBottom: 20, fontWeight: 600, color: "var(--wood-deep)" }}>
             Our Suds &amp; Swine timeline — show up whenever, stay as long as you like 🫧
           </p>
         </div>
