@@ -5,7 +5,8 @@ export const PARTY = {
   date: "Saturday, June 27th",
   time: "2:00 PM",
   address: "3040 Nantucket Dr",
-  note: "Bring a towel. Leave your dignity at home.",
+  note: "Bring a towel. Lose the shoes.",
+  rsvpBy: "June 20th",
 }
 
 // the day's loose plan — rendered as the "Suds & Swine" timeline
@@ -22,16 +23,16 @@ export const AGENDA: AgendaItem[] = [
   {
     time: "2:00",
     meridiem: "PM",
-    title: "Arrival & Apps",
+    title: "The Warm-Up",
     body: "Yard games, music, snacks and cold drinks. Roll in whenever.",
-    emoji: "🧺",
+    emoji: "🎶",
     accent: "var(--tomato)",
   },
   {
     time: "3:00",
     meridiem: "PM",
     title: "Foam Cannon Fires",
-    body: "The 90-minute foam window begins. Suit up.",
+    body: "The cannon roars to life — suit up and dive into the suds.",
     emoji: "🫧",
     accent: "var(--teal)",
   },
