@@ -151,7 +151,7 @@ export async function submitPartyRSVP(formData: FormData): Promise<PartyRsvpResu
 /* ---------- the wall ---------- */
 
 const noteSchema = z.object({
-  name: z.string().max(40).optional(),
+  name: z.string().trim().min(1, "Name is required").max(40),
   text: z.string().min(1).max(120),
   // honeypot + speed-check + captcha (mirrors the RSVP form's defenses)
   website: z.string().optional(),
@@ -160,7 +160,7 @@ const noteSchema = z.object({
 })
 
 export async function postWallNote(input: {
-  name?: string
+  name: string
   text: string
   website?: string
   loadedAt?: string
@@ -178,7 +178,7 @@ export async function postWallNote(input: {
     if (Number.isFinite(elapsed) && elapsed < 3000) return null
   }
 
-  const name = parsed.data.name?.trim() || "Anonymous"
+  const name = parsed.data.name
   const text = parsed.data.text.trim()
 
   // content filter: links/spam terms — silently dropped

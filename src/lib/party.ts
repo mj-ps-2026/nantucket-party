@@ -5,7 +5,7 @@ export const PARTY = {
   date: "Saturday, June 27th",
   time: "2:00 PM",
   address: "3040 Nantucket Dr",
-  note: "Bring a towel. Lose the shoes.",
+  note: "Bring a towel. Foam waits for no one.",
   rsvpBy: "June 20th",
 }
 
@@ -32,7 +32,7 @@ export const AGENDA: AgendaItem[] = [
     time: "3:00",
     meridiem: "PM",
     title: "Foam Cannon Fires",
-    body: "The cannon roars to life — suit up and dive into the suds.",
+    body: "Foam o'clock — suit up and dive into the suds.",
     emoji: "🫧",
     accent: "var(--teal)",
   },
