@@ -5,8 +5,6 @@ import { getInitialPartyData } from "@/lib/party-queries"
 export const dynamic = "force-dynamic"
 
 export default async function Home() {
-  const { guests, regrets, notes } = await getInitialPartyData()
-  return (
-    <PartyExperience initialGuests={guests} initialRegrets={regrets} initialNotes={notes} />
-  )
+  const { guests, notes } = await getInitialPartyData()
+  return <PartyExperience initialGuests={guests} initialNotes={notes} />
 }

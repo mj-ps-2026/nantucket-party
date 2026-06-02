@@ -652,12 +652,10 @@ export function Rsvp({
 /* ---------- PART 4 — who's going ---------- */
 export function Going({
   guests,
-  regrets,
   newId,
   listRef,
 }: {
   guests: GuestTile[]
-  regrets: number
   newId: string | null
   listRef: RefObject<HTMLElement | null>
 }) {
@@ -728,11 +726,6 @@ export function Going({
             </div>
           ))}
         </div>
-        {regrets > 0 && (
-          <p style={{ textAlign: "center", marginTop: 22, color: "var(--ink-soft)", fontSize: 14, fontWeight: 600 }}>
-            {regrets} can&apos;t make it this time 🫶
-          </p>
-        )}
       </div>
     </section>
   )
@@ -750,12 +743,17 @@ export function Wall({
 }) {
   const [name, setName] = useState("")
   const [text, setText] = useState("")
+  const [err, setErr] = useState(false)
   const [token, setToken] = useState<string | null>(null)
   const [tsReset, setTsReset] = useState(0)
   const post = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name.trim()) {
+      setErr(true)
+      return
+    }
     if (!text.trim()) return
-    onPost({ name: name.trim() || "Anonymous", text: text.trim(), token })
+    onPost({ name: name.trim(), text: text.trim(), token })
     setText("")
     // the token is single-use — the wall takes repeat posts, so refresh it
     setToken(null)
@@ -767,7 +765,7 @@ export function Wall({
         <div style={{ textAlign: "center" }}>
           <SectionHead color="var(--pink)">The Wall</SectionHead>
           <p style={{ marginTop: -10, marginBottom: 24, fontWeight: 600, color: "var(--wood-deep)" }}>
-            Leave a note — hype, threats, potluck claims, all welcome
+            Drop a note — countdown&apos;s on 🫧
           </p>
         </div>
 
@@ -789,11 +787,15 @@ export function Wall({
         >
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <input
-              style={{ ...inputStyle, flex: "1 1 140px" }}
+              style={{ ...inputStyle, flex: "1 1 140px", borderColor: err ? "var(--tomato)" : "#e7ddca" }}
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="your name (optional)"
+              onChange={(e) => {
+                setName(e.target.value)
+                setErr(false)
+              }}
+              placeholder="your name"
               maxLength={40}
+              autoComplete="name"
             />
             <input
               style={{ ...inputStyle, flex: "3 1 220px" }}
@@ -803,6 +805,11 @@ export function Wall({
               maxLength={120}
             />
           </div>
+          {err && (
+            <span style={{ color: "var(--tomato)", fontWeight: 600, fontSize: 14 }}>
+              Add your name so we know who left it!
+            </span>
+          )}
           <Turnstile onToken={setToken} resetSignal={tsReset} />
           <PartyButton type="submit" variant="sunny" full>
             Stick it on the wall 📌
