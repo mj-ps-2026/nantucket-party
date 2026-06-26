@@ -17,12 +17,11 @@ export default async function InvitePage({
 
   if (!invite) notFound()
 
-  const { guests, regrets, notes } = await getInitialPartyData()
+  const { guests, notes } = await getInitialPartyData()
 
   return (
     <PartyExperience
       initialGuests={guests}
-      initialRegrets={regrets}
       initialNotes={notes}
       inviteToken={token}
       invitedBy={invite.name}

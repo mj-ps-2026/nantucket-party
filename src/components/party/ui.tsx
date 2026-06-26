@@ -138,47 +138,6 @@ export const inputStyle: CSSProperties = {
   transition: "border-color .15s var(--ease), box-shadow .15s var(--ease)",
 }
 
-/* bouncing scroll cue arrow */
-export function ScrollCue({ label = "RSVP below", onClick }: { label?: string; onClick?: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="cue"
-      style={{
-        display: "inline-flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 4,
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: "var(--ink)",
-      }}
-    >
-      <span
-        style={{
-          fontFamily: "var(--display)",
-          fontWeight: 600,
-          fontSize: 15,
-          textTransform: "uppercase",
-          letterSpacing: ".1em",
-        }}
-      >
-        {label}
-      </span>
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" className="cue-arrow">
-        <path
-          d="M12 4v14M6 13l6 6 6-6"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
-  )
-}
-
 const BURST_COLORS = ["var(--tomato)", "var(--sunny)", "var(--pink)", "var(--teal)", "var(--grass)", "#fff"]
 
 // deterministic 0..1 pseudo-random from a seed — keeps the confetti render pure

@@ -28,7 +28,7 @@ const dmSans = DM_Sans({
 
 const title = "Foam Party & Pig Roast — You're Invited"
 const description =
-  "Saturday, June 27th · 1:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds."
+  "Sunday, June 28th · 2:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds."
 
 // Absolute base URL so the og:image resolves for link previews (iMessage/SMS,
 // social). Defaults to the production domain; NEXT_PUBLIC_SITE_URL overrides

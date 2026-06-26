@@ -285,3 +285,198 @@ body.party::before {
 .animate-foam {
   animation: foam linear forwards;
 }
+
+/* =====================================================================
+   AGENDA — the "Suds & Swine" timeline. A dashed foam-trail runs down
+   the centre; each time is a glossy bubble node, activity cards alternate
+   left/right and rise into place on scroll (.is-in toggled by observer).
+   ===================================================================== */
+.agenda-list {
+  position: relative;
+  max-width: 940px;
+  margin: 6px auto 0;
+  padding: 6px 0;
+}
+/* the dashed suds trail */
+.agenda-list::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 3px dashed rgba(255, 255, 255, 0.9);
+  z-index: 0;
+}
+.agenda-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.agenda-row:last-child {
+  margin-bottom: 0;
+}
+
+/* glossy soap-bubble time node */
+.agenda-node {
+  grid-column: 2;
+  justify-self: center;
+  position: relative;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #ffffff, #eef7ff 78%);
+  border: 4px solid var(--accent, var(--sky-deep));
+  box-shadow: var(--pop-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+}
+.agenda-node .h {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+.agenda-node .m {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+/* specular highlight so the node reads as a bubble */
+.agenda-node::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 18px;
+  width: 20px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  filter: blur(1px);
+}
+
+.agenda-card {
+  background: #fff;
+  border: 3px solid var(--accent, var(--sky-deep));
+  border-radius: var(--r-md);
+  box-shadow: var(--pop-shadow);
+  padding: 18px 20px;
+  opacity: 0;
+  transition:
+    opacity 0.5s var(--ease),
+    transform 0.6s var(--spring);
+}
+.agenda-row:nth-child(odd) .agenda-card {
+  grid-column: 1;
+  text-align: right;
+  transform: translateY(26px) rotate(-1.4deg);
+}
+.agenda-row:nth-child(even) .agenda-card {
+  grid-column: 3;
+  text-align: left;
+  transform: translateY(26px) rotate(1.4deg);
+}
+.agenda-row.is-in:nth-child(odd) .agenda-card {
+  opacity: 1;
+  transform: rotate(-1.4deg);
+}
+.agenda-row.is-in:nth-child(even) .agenda-card {
+  opacity: 1;
+  transform: rotate(1.4deg);
+}
+/* time is shown in the bubble (aria-hidden); expose it to SR here */
+.sr-time {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.agenda-emoji {
+  display: block;
+  font-size: 34px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.agenda-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(18px, 2.5vw, 22px);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.agenda-body {
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+
+/* phone: spine hugs the left, every card stacks to its right */
+@media (max-width: 760px) {
+  .agenda-list::before {
+    left: 31px;
+  }
+  .agenda-row {
+    grid-template-columns: 62px 1fr;
+    column-gap: 14px;
+    margin-bottom: 14px;
+  }
+  .agenda-node {
+    grid-column: 1;
+    width: 60px;
+    height: 60px;
+    border-width: 3px;
+  }
+  .agenda-node .h {
+    font-size: 16px;
+  }
+  .agenda-node .m {
+    font-size: 9px;
+  }
+  .agenda-row:nth-child(odd) .agenda-card,
+  .agenda-row:nth-child(even) .agenda-card {
+    grid-column: 2;
+    text-align: left;
+  }
+  .agenda-row:nth-child(odd) .agenda-card {
+    transform: translateY(20px) rotate(-1deg);
+  }
+  .agenda-row:nth-child(even) .agenda-card {
+    transform: translateY(20px) rotate(1deg);
+  }
+  .agenda-row.is-in:nth-child(odd) .agenda-card {
+    transform: rotate(-1deg);
+  }
+  .agenda-row.is-in:nth-child(even) .agenda-card {
+    transform: rotate(1deg);
+  }
+}
+
+/* reduced motion: no rise, cards just sit there (still tilted) */
+@media (prefers-reduced-motion: reduce) {
+  .agenda-card {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+  .agenda-row:nth-child(odd) .agenda-card {
+    transform: rotate(-1.4deg) !important;
+  }
+  .agenda-row:nth-child(even) .agenda-card {
+    transform: rotate(1.4deg) !important;
+  }
+}

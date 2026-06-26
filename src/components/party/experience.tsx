@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { TIMING, type GuestTile, type WallNote } from "@/lib/party"
 import { submitPartyRSVP, postWallNote } from "@/app/party-actions"
-import { InvitationCard, Rsvp, Going, Wall, type RsvpChoice, type RsvpData } from "./sections"
+import { InvitationCard, Agenda, Rsvp, Going, Wall, type RsvpChoice, type RsvpData } from "./sections"
 import { Burst, DieCutSticker } from "./ui"
 import { FoamLayer } from "./foam-layer"
 import type { FoamHandle } from "@/lib/foam"
@@ -23,21 +23,18 @@ function useReducedMotion() {
 
 export function PartyExperience({
   initialGuests,
-  initialRegrets,
   initialNotes,
   inviteToken,
   invitedBy,
   defaultName,
 }: {
   initialGuests: GuestTile[]
-  initialRegrets: number
   initialNotes: WallNote[]
   inviteToken?: string
   invitedBy?: string
   defaultName?: string
 }) {
   const [guests, setGuests] = useState(initialGuests)
-  const [regrets, setRegrets] = useState(initialRegrets)
   const [notes, setNotes] = useState(initialNotes)
   const [newId, setNewId] = useState<string | null>(null)
   const [newNoteId, setNewNoteId] = useState<string | null>(null)
@@ -70,12 +67,10 @@ export function PartyExperience({
     window.scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" })
   }
 
-  function finish(g: boolean, guest: GuestTile | null, note: WallNote | null) {
+  function finish(guest: GuestTile | null, note: WallNote | null) {
     if (guest) {
       setGuests((arr) => [guest, ...arr])
       setNewId(guest.id)
-    } else if (!g) {
-      setRegrets((r) => r + 1)
     }
     if (note) {
       setNotes((n) => [note, ...n])
@@ -138,12 +133,12 @@ export function PartyExperience({
       if (!reduced) foamRef.current?.blast()
     }, 60)
     setTimeout(() => setBurstGo(true), 220)
-    setTimeout(() => finish(g, guest, note), TIMING.clearHold + 700)
+    setTimeout(() => finish(guest, note), TIMING.clearHold + 700)
   }
 
   async function handlePost({ name, text, token }: { name: string; text: string; token: string | null }) {
     const tempId = `tmp-${Date.now()}`
-    const temp: WallNote = { id: tempId, name: name || "Anonymous", text, tint: 0 }
+    const temp: WallNote = { id: tempId, name, text, tint: 0 }
     setNotes((arr) => [temp, ...arr])
     setNewNoteId(tempId)
     const saved = await postWallNote({
@@ -176,14 +171,17 @@ export function PartyExperience({
         revealed
         reduced={reduced}
         invitedBy={invitedBy}
+        titleTreatment="sign"
         onRsvp={() => scrollToEl(rsvpRef.current)}
       />
+
+      <Agenda reduced={reduced} />
 
       <div ref={rsvpRef}>
         <Rsvp onSubmit={handleSubmit} reduced={reduced} pending={pending} defaultName={defaultName} />
       </div>
 
-      <Going guests={guests} regrets={regrets} newId={newId} listRef={listRef} />
+      <Going guests={guests} newId={newId} listRef={listRef} />
 
       <Wall notes={notes} newNoteId={newNoteId} onPost={handlePost} />
 
