@@ -605,7 +605,7 @@ export function Going({
             Going (<span style={{ color: "var(--tomato)" }}>{total}</span>)
           </SectionHead>
           <p style={{ marginTop: -10, marginBottom: 24, fontWeight: 600, color: "var(--wood-deep)" }}>
-            {guests.length} crews and counting · the front yard&apos;s filling up 🎉
+            {guests.length} crews and counting · the backyard&apos;s filling up 🎉
           </p>
         </div>
         <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>

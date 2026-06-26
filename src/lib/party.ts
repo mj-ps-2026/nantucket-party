@@ -2,14 +2,14 @@
 
 export const PARTY = {
   title: "Foam Party & Pig Roast",
-  date: "Saturday, June 27th",
+  date: "Sunday, June 28th",
   time: "1:00 PM",
   address: "3040 Nantucket Dr",
   note: "Bring a towel. Leave your dignity at home.",
-  // weather call: rain moved us out front under tents — set to "" to hide the banner
+  // weather call: rain bumped us to Sunday + tents — set body to "" to hide the banner
   rainPlan: {
-    headline: "Rain plan: we're still on! ☔️→🫧",
-    body: "Forecast says showers, so we've moved to the FRONT YARD under big tents. Still pig, still foam, still a blast. Bring that towel.",
+    headline: "New plan: we're moving to Sunday! ☔️→🫧",
+    body: "Rain's in the Saturday forecast, so we're bumping the party to Sunday and putting up tents in case there's still a bit of rain. Same spot, still pig, still foam, still a blast. Bring that towel.",
   },
 }
 
