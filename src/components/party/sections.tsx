@@ -18,10 +18,10 @@ export function RainBanner() {
       style={{
         position: "absolute",
         zIndex: 3,
-        top: -18,
+        top: "50%",
         left: "50%",
         width: "min(760px, 94%)",
-        transform: "translateX(-50%) rotate(-1.6deg)",
+        transform: "translate(-50%, -50%) rotate(-1.6deg)",
         background: "var(--sunny)",
         color: "var(--ink)",
         border: "5px solid #fff",
@@ -53,6 +53,20 @@ export function RainBanner() {
       >
         {PARTY.rainPlan.body}
       </p>
+      {PARTY.rainPlan.from && (
+        <div
+          style={{
+            marginTop: 10,
+            fontFamily: "var(--display)",
+            fontWeight: 700,
+            fontSize: "clamp(15px,3.2vw,18px)",
+            color: "var(--ink)",
+            transform: "rotate(-1.5deg)",
+          }}
+        >
+          — {PARTY.rainPlan.from}
+        </div>
+      )}
     </div>
   )
 }
