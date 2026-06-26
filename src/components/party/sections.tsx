@@ -554,6 +554,51 @@ export function Agenda({ reduced }: { reduced: boolean }) {
   )
 }
 
+/* ---------- PART 2.6 — where to park ---------- */
+export function Parking() {
+  return (
+    <section id="parking" style={{ padding: "18px 0 40px", scrollMarginTop: 16 }}>
+      <div className="wrap" style={{ maxWidth: 640 }}>
+        <div
+          style={{
+            position: "relative",
+            background: "var(--cream)",
+            borderRadius: "var(--r-lg)",
+            border: "var(--bord) solid #fff",
+            padding: "clamp(24px,5vw,40px)",
+            boxShadow: "var(--sticker-shadow)",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 44, lineHeight: 1 }} aria-hidden="true">
+            🅿️
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <SectionHead color="var(--sky-deep)">Parking</SectionHead>
+          </div>
+          <p
+            style={{
+              marginTop: -8,
+              fontFamily: "var(--display)",
+              fontWeight: 500,
+              fontSize: "clamp(16px,3.4vw,20px)",
+              color: "var(--wood-deep)",
+              lineHeight: 1.4,
+              maxWidth: 460,
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            Grab a spot right on <strong style={{ color: "var(--ink)" }}>Nantucket Dr</strong>. If it&apos;s
+            filling up, loop on around to <strong style={{ color: "var(--ink)" }}>Waterford</strong>{" "}
+            and stroll over — it&apos;s just a short walk. 🚗
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ---------- PART 3 — the RSVP ---------- */
 export function Rsvp({
   onSubmit,
