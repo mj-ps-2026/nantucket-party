@@ -26,9 +26,39 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "700"],
 })
 
+const title = "Foam Party & Pig Roast — You're Invited"
+const description =
+  "Sunday, June 28th · 2:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds."
+
+// Absolute base URL so the og:image resolves for link previews (iMessage/SMS,
+// social). Defaults to the production domain; NEXT_PUBLIC_SITE_URL overrides
+// (e.g. http://localhost:3000 in dev, or a new domain if it ever changes).
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://thenantucket.party"
+
+// Compressed (~275 KB) copy of the hero, sized for fast link previews.
+const heroImage = {
+  url: "/hero-og.jpg",
+  width: 1200,
+  height: 655,
+  alt: "Foam Party & Pig Roast — a sunny backyard with a foam cannon, a pig on a spit, balloons, and kids playing in the suds",
+}
+
 export const metadata: Metadata = {
-  title: "Foam Party & Pig Roast — You're Invited",
-  description: "Saturday, June 27th · 2:00 PM · 3040 Nantucket Dr. RSVP — it takes 10 seconds.",
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    images: [heroImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [heroImage.url],
+  },
 }
 
 export default function RootLayout({

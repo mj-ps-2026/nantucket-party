@@ -2,11 +2,16 @@
 
 export const PARTY = {
   title: "Foam Party & Pig Roast",
-  date: "Saturday, June 27th",
+  date: "Sunday, June 28th",
   time: "2:00 PM",
   address: "3040 Nantucket Dr",
   note: "Bring a towel. Foam waits for no one.",
   rsvpBy: "June 20th",
+  // weather call: rain bumped us to Sunday + tents — set body to "" to hide the banner
+  rainPlan: {
+    headline: "New plan: we're moving to Sunday! ☔️→🫧",
+    body: "Rain's in the Saturday forecast, so we're bumping the party to Sunday and putting up tents in case there's still a bit of rain. Same spot, still pig, still foam, still a blast. Bring that towel.",
+  },
 }
 
 // the day's loose plan — rendered as the "Suds & Swine" timeline
