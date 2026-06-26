@@ -9,6 +9,54 @@ import { Turnstile } from "../turnstile"
 export type RsvpChoice = "in" | "out"
 export type RsvpData = { name: string; email: string; guests: number; note: string; token: string | null }
 
+/* ---------- weather call-out — slapped across the top of the hero like a sticker ---------- */
+export function RainBanner() {
+  if (!PARTY.rainPlan?.body) return null
+  return (
+    <div
+      role="status"
+      style={{
+        position: "absolute",
+        zIndex: 3,
+        top: -18,
+        left: "50%",
+        width: "min(760px, 94%)",
+        transform: "translateX(-50%) rotate(-1.6deg)",
+        background: "var(--sunny)",
+        color: "var(--ink)",
+        border: "5px solid #fff",
+        borderRadius: "var(--r-md)",
+        boxShadow: "var(--sticker-shadow)",
+        padding: "20px 30px 22px",
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "var(--display)",
+          fontWeight: 700,
+          fontSize: "clamp(22px,4.6vw,32px)",
+          lineHeight: 1.08,
+        }}
+      >
+        {PARTY.rainPlan.headline}
+      </div>
+      <p
+        style={{
+          margin: "8px 0 0",
+          fontFamily: "var(--display)",
+          fontWeight: 500,
+          fontSize: "clamp(15px,3.4vw,19px)",
+          color: "var(--wood-deep)",
+          lineHeight: 1.34,
+        }}
+      >
+        {PARTY.rainPlan.body}
+      </p>
+    </div>
+  )
+}
+
 /* ---------- PART 2 — the invitation card ---------- */
 export function InvitationCard({
   revealed,
@@ -109,6 +157,7 @@ export function InvitationCard({
         className={revealed && !reduced ? "toss" : ""}
         style={{ position: "relative", zIndex: 1, margin: "26px 0 10px", width: "min(880px, 92vw)", perspective: 1100 }}
       >
+        <RainBanner />
         <div
           ref={cardRef}
           style={{
@@ -556,7 +605,7 @@ export function Going({
             Going (<span style={{ color: "var(--tomato)" }}>{total}</span>)
           </SectionHead>
           <p style={{ marginTop: -10, marginBottom: 24, fontWeight: 600, color: "var(--wood-deep)" }}>
-            {guests.length} crews and counting · the backyard&apos;s filling up 🎉
+            {guests.length} crews and counting · the front yard&apos;s filling up 🎉
           </p>
         </div>
         <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>

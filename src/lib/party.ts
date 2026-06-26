@@ -6,6 +6,11 @@ export const PARTY = {
   time: "1:00 PM",
   address: "3040 Nantucket Dr",
   note: "Bring a towel. Leave your dignity at home.",
+  // weather call: rain moved us out front under tents — set to "" to hide the banner
+  rainPlan: {
+    headline: "Rain plan: we're still on! ☔️→🫧",
+    body: "Forecast says showers, so we've moved to the FRONT YARD under big tents. Still pig, still foam, still a blast. Bring that towel.",
+  },
 }
 
 export const PARTY_EMOJI = ["🦄", "🐷", "🫧", "🍻", "🎈", "🌭", "🍉", "🌈", "☀️", "🏖️"]
